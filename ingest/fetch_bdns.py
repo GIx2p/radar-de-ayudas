@@ -12,6 +12,14 @@ Fuente: https://www.infosubvenciones.es/bdnstrans/api
 
 Aviso legal de reutilización de datos:
 https://www.infosubvenciones.es/bdnstrans/GE/es/avisolegal
+
+Ejemplos:
+  # Ventana de los últimos 12 meses (def), guarda en data/ayudas.json
+  python ingest/fetch_bdns.py
+  # Prueba rápida: solo 60 candidatas
+  python ingest/fetch_bdns.py --max-candidatas 60
+  # Rango de fechas explícito
+  python ingest/fetch_bdns.py --fecha-desde 01/01/2026 --fecha-hasta 07/06/2026
 """
 
 from __future__ import annotations
@@ -42,14 +50,15 @@ USER_AGENT = "radar-de-ayudas/0.1 (proyecto sin ánimo de lucro; datos abiertos 
 BENEFICIARIO_PERSONAS_FISICAS = "1"
 
 TIMEOUT = 30
+RAIZ = Path(__file__).resolve().parents[1]
+CACHE_DIR = Path(__file__).resolve().parent / ".cache"
 
 
 # --------------------------------------------------------------------------- #
-# Utilidades HTTP
+# Utilidades
 # --------------------------------------------------------------------------- #
-def http_get_json(url: str, params: dict, intentos: int = 3, espera: float = 2.0):
+def http_get_json(url: str, params: dict, intentos: int = 4, espera: float = 2.5):
     """GET con parámetros, devuelve JSON. Reintenta ante fallos de red."""
-    # tiposBeneficiario y similares pueden ir repetidos; urlencode con doseq
     query = urllib.parse.urlencode(params, doseq=True)
     full = f"{url}?{query}"
     ultimo_error = None
@@ -60,33 +69,47 @@ def http_get_json(url: str, params: dict, intentos: int = 3, espera: float = 2.0
                 "User-Agent": USER_AGENT,
             })
             with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
-                datos = json.loads(resp.read().decode("utf-8"))
-            return datos
+                return json.loads(resp.read().decode("utf-8"))
         except Exception as e:  # noqa: BLE001
             ultimo_error = e
             if intento < intentos:
-                time.sleep(espera)
+                time.sleep(espera * intento)  # backoff creciente
     raise RuntimeError(f"Fallo al pedir {full}: {ultimo_error}")
+
+
+def fecha_meses_atras(meses: int) -> str:
+    """Devuelve la fecha de hace `meses` meses en formato dd/MM/yyyy."""
+    hoy = date.today()
+    total = (hoy.year * 12 + (hoy.month - 1)) - meses
+    anio, mes = divmod(total, 12)
+    mes += 1
+    dia = min(hoy.day, 28)  # evita problemas con fin de mes
+    return f"{dia:02d}/{mes:02d}/{anio:04d}"
 
 
 # --------------------------------------------------------------------------- #
 # Búsqueda de convocatorias candidatas (lista ligera, paginada)
 # --------------------------------------------------------------------------- #
-def buscar_candidatas(beneficiarios, max_paginas, page_size, pausa):
+def buscar_candidatas(beneficiarios, fecha_desde, fecha_hasta, max_paginas, page_size, pausa):
     """Genera items de la lista de convocatorias ordenadas por recepción desc."""
     params_base = {
         "vpd": VPD,
         "pageSize": page_size,
         "order": "fechaRecepcion",
         "direccion": "desc",
-        "tiposBeneficiario": beneficiarios,  # lista -> doseq
+        "tiposBeneficiario": beneficiarios,
     }
+    if fecha_desde:
+        params_base["fechaDesde"] = fecha_desde
+    if fecha_hasta:
+        params_base["fechaHasta"] = fecha_hasta
+
     primera = http_get_json(EP_BUSQUEDA, {**params_base, "page": 0})
     total_paginas = primera.get("totalPages", 1)
     total_elementos = primera.get("totalElements", 0)
     paginas = total_paginas if max_paginas == 0 else min(max_paginas, total_paginas)
-    print(f"  · candidatas totales según API: {total_elementos} "
-          f"({total_paginas} páginas); se leerán {paginas}", file=sys.stderr)
+    print(f"  · candidatas en ventana: {total_elementos} "
+          f"({total_paginas} pág.); se leerán {paginas}", file=sys.stderr)
 
     for item in primera.get("content", []):
         yield item
@@ -98,14 +121,26 @@ def buscar_candidatas(beneficiarios, max_paginas, page_size, pausa):
 
 
 # --------------------------------------------------------------------------- #
-# Detalle + normalización
+# Detalle (con caché en disco) + normalización
 # --------------------------------------------------------------------------- #
-def obtener_detalle(num_conv: str):
-    return http_get_json(EP_DETALLE, {"vpd": VPD, "numConv": num_conv})
+def obtener_detalle(num_conv: str, usar_cache: bool = True):
+    cache = CACHE_DIR / f"{num_conv}.json"
+    if usar_cache and cache.exists():
+        try:
+            return json.loads(cache.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            pass  # caché corrupta -> se vuelve a pedir
+    datos = http_get_json(EP_DETALLE, {"vpd": VPD, "numConv": num_conv})
+    if usar_cache:
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        try:
+            cache.write_text(json.dumps(datos, ensure_ascii=False), encoding="utf-8")
+        except Exception:  # noqa: BLE001
+            pass
+    return datos
 
 
 def _lista_desc(valores):
-    """Convierte [{'descripcion': x}, ...] -> [x, ...]."""
     out = []
     for v in valores or []:
         if isinstance(v, dict) and v.get("descripcion"):
@@ -123,14 +158,13 @@ def normalizar(detalle: dict) -> dict:
         }
         for d in (detalle.get("documentos") or [])
     ]
-    codigo = detalle.get("codigoBDNS")
     interno = detalle.get("id")
     return {
-        "id": codigo,
+        "id": detalle.get("codigoBDNS"),
         "id_interno": interno,
         "titulo": (detalle.get("descripcion") or "").strip(),
-        "ambito": organo.get("nivel1"),          # ESTATAL / AUTONOMICA / LOCAL
-        "comunidad": organo.get("nivel2"),        # CCAA u organismo
+        "ambito": organo.get("nivel1"),          # ESTATAL / AUTONOMICA / LOCAL / OTROS
+        "comunidad": organo.get("nivel2"),
         "organo": organo.get("nivel3"),
         "finalidad": detalle.get("descripcionFinalidad"),
         "regiones": _lista_desc(detalle.get("regiones")),  # p.ej. "ES30 - COMUNIDAD DE MADRID"
@@ -155,62 +189,78 @@ def normalizar(detalle: dict) -> dict:
 def main():
     p = argparse.ArgumentParser(description="Ingesta de ayudas desde BDNS.")
     p.add_argument("--beneficiarios", default=BENEFICIARIO_PERSONAS_FISICAS,
-                   help="Códigos de tipo de beneficiario, separados por coma. "
-                        "1=personas físicas (def).")
-    p.add_argument("--max-paginas", type=int, default=1,
-                   help="Páginas de candidatas a leer (0 = todas). Def: 1.")
-    p.add_argument("--page-size", type=int, default=200,
-                   help="Resultados por página (máx 10000). Def: 200.")
+                   help="Códigos de tipo de beneficiario, coma. 1=personas físicas (def).")
+    p.add_argument("--meses", type=int, default=12,
+                   help="Ventana hacia atrás en meses (def: 12). Ignorado si se da --fecha-desde.")
+    p.add_argument("--fecha-desde", default=None, help="dd/MM/yyyy (sobrescribe --meses).")
+    p.add_argument("--fecha-hasta", default=None, help="dd/MM/yyyy (def: hoy).")
+    p.add_argument("--max-paginas", type=int, default=0,
+                   help="Páginas de candidatas (0 = todas en la ventana). Def: 0.")
+    p.add_argument("--page-size", type=int, default=1000,
+                   help="Resultados por página de búsqueda (máx 10000). Def: 1000.")
     p.add_argument("--max-candidatas", type=int, default=0,
-                   help="Límite de candidatas a enriquecer (0 = sin límite).")
-    p.add_argument("--workers", type=int, default=4,
-                   help="Hilos concurrentes para el detalle. Def: 4.")
+                   help="Límite de candidatas a enriquecer (0 = sin límite). Para pruebas.")
+    p.add_argument("--workers", type=int, default=5,
+                   help="Hilos concurrentes para el detalle. Def: 5.")
     p.add_argument("--pausa", type=float, default=0.3,
                    help="Pausa entre páginas de búsqueda (seg). Def: 0.3.")
+    p.add_argument("--sin-cache", action="store_true", help="No usar la caché de detalle.")
     p.add_argument("--todas", action="store_true",
                    help="No filtrar por 'abierto'; incluir también cerradas.")
-    p.add_argument("--salida", default=str(Path(__file__).resolve().parents[1] / "data" / "ayudas.json"),
+    p.add_argument("--salida", default=str(RAIZ / "data" / "ayudas.json"),
                    help="Ruta del JSON de salida.")
     args = p.parse_args()
 
     beneficiarios = [b.strip() for b in args.beneficiarios.split(",") if b.strip()]
+    fecha_desde = args.fecha_desde or fecha_meses_atras(args.meses)
+    fecha_hasta = args.fecha_hasta or date.today().strftime("%d/%m/%Y")
+    usar_cache = not args.sin_cache
+    t0 = time.time()
 
     print("Radar de Ayudas — ingesta BDNS", file=sys.stderr)
-    print(f"  · beneficiarios: {beneficiarios}", file=sys.stderr)
+    print(f"  · beneficiarios: {beneficiarios} | ventana: {fecha_desde} → {fecha_hasta}",
+          file=sys.stderr)
 
     # 1) Candidatas (lista ligera)
     candidatas = []
-    for item in buscar_candidatas(beneficiarios, args.max_paginas, args.page_size, args.pausa):
+    for item in buscar_candidatas(beneficiarios, fecha_desde, fecha_hasta,
+                                  args.max_paginas, args.page_size, args.pausa):
         candidatas.append(item)
         if args.max_candidatas and len(candidatas) >= args.max_candidatas:
             break
     print(f"  · candidatas recogidas: {len(candidatas)}", file=sys.stderr)
 
-    # 2) Enriquecer con el detalle (concurrente)
+    # 2) Enriquecer con el detalle (concurrente, con caché)
     detalles = []
     nums = [c.get("numeroConvocatoria") for c in candidatas if c.get("numeroConvocatoria")]
+    errores = 0
     with ThreadPoolExecutor(max_workers=args.workers) as ex:
-        futuros = {ex.submit(obtener_detalle, n): n for n in nums}
+        futuros = {ex.submit(obtener_detalle, n, usar_cache): n for n in nums}
         for i, fut in enumerate(as_completed(futuros), 1):
             try:
                 detalles.append(fut.result())
             except Exception as e:  # noqa: BLE001
+                errores += 1
                 print(f"    ! error en {futuros[fut]}: {e}", file=sys.stderr)
-            if i % 25 == 0:
-                print(f"    · detalle {i}/{len(nums)}", file=sys.stderr)
+            if i % 250 == 0:
+                print(f"    · detalle {i}/{len(nums)}  ({time.time()-t0:.0f}s)", file=sys.stderr)
 
     # 3) Normalizar + filtrar abiertas
     ayudas = [normalizar(d) for d in detalles]
     if not args.todas:
         ayudas = [a for a in ayudas if a.get("abierto") is True]
-    ayudas.sort(key=lambda a: a.get("fecha_fin") or "9999", reverse=False)
+    # ordena por fecha de fin de solicitud ascendente (las que vencen antes, primero)
+    ayudas.sort(key=lambda a: a.get("fecha_fin") or "9999-99-99")
 
     salida = {
         "generado": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "fuente": "BDNS — Sistema Nacional de Publicidad de Subvenciones (SNPSAP)",
         "aviso_legal": "https://www.infosubvenciones.es/bdnstrans/GE/es/avisolegal",
+        "ventana": {"desde": fecha_desde, "hasta": fecha_hasta},
         "filtro_beneficiarios": beneficiarios,
         "solo_abiertas": not args.todas,
+        "candidatas_evaluadas": len(nums),
+        "errores": errores,
         "total": len(ayudas),
         "ayudas": ayudas,
     }
@@ -218,7 +268,8 @@ def main():
     ruta = Path(args.salida)
     ruta.parent.mkdir(parents=True, exist_ok=True)
     ruta.write_text(json.dumps(salida, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"  · escritas {len(ayudas)} ayudas (abiertas) en {ruta}", file=sys.stderr)
+    print(f"  · {len(ayudas)} ayudas abiertas de {len(nums)} evaluadas "
+          f"(errores: {errores}) en {time.time()-t0:.0f}s → {ruta}", file=sys.stderr)
 
 
 if __name__ == "__main__":
