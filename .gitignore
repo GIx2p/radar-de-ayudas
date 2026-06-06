@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Secretos y entorno (nunca subir)
+.env
+.env.*
+*.key
+*.pem
+credentials*.json
+secrets*.json
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+
+# Datos temporales de la ingesta (los crudos no se versionan; sí el JSON normalizado en data/)
+ingest/.cache/
+ingest/raw/
+*.tmp
