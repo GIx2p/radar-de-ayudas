@@ -123,13 +123,15 @@ def buscar_candidatas(beneficiarios, fecha_desde, fecha_hasta, max_paginas, page
 # --------------------------------------------------------------------------- #
 # Detalle (con caché en disco) + normalización
 # --------------------------------------------------------------------------- #
-def obtener_detalle(num_conv: str, usar_cache: bool = True):
+def obtener_detalle(num_conv: str, usar_cache: bool = True, delay: float = 0.0):
     cache = CACHE_DIR / f"{num_conv}.json"
     if usar_cache and cache.exists():
         try:
             return json.loads(cache.read_text(encoding="utf-8"))
         except Exception:  # noqa: BLE001
             pass  # caché corrupta -> se vuelve a pedir
+    if delay:
+        time.sleep(delay)  # freno de cortesía con la API
     datos = http_get_json(EP_DETALLE, {"vpd": VPD, "numConv": num_conv})
     if usar_cache:
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -204,6 +206,8 @@ def main():
                    help="Hilos concurrentes para el detalle. Def: 5.")
     p.add_argument("--pausa", type=float, default=0.3,
                    help="Pausa entre páginas de búsqueda (seg). Def: 0.3.")
+    p.add_argument("--delay", type=float, default=0.0,
+                   help="Freno por petición de detalle (seg). Útil en CI. Def: 0.")
     p.add_argument("--sin-cache", action="store_true", help="No usar la caché de detalle.")
     p.add_argument("--todas", action="store_true",
                    help="No filtrar por 'abierto'; incluir también cerradas.")
@@ -235,7 +239,7 @@ def main():
     nums = [c.get("numeroConvocatoria") for c in candidatas if c.get("numeroConvocatoria")]
     errores = 0
     with ThreadPoolExecutor(max_workers=args.workers) as ex:
-        futuros = {ex.submit(obtener_detalle, n, usar_cache): n for n in nums}
+        futuros = {ex.submit(obtener_detalle, n, usar_cache, args.delay): n for n in nums}
         for i, fut in enumerate(as_completed(futuros), 1):
             try:
                 detalles.append(fut.result())

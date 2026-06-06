@@ -1,0 +1,58 @@
+name: Actualizar catálogo (mensual)
+
+on:
+  schedule:
+    # Día 1 de cada mes a las 05:00 UTC
+    - cron: "0 5 1 * *"
+  workflow_dispatch:
+    inputs:
+      meses:
+        description: "Ventana hacia atrás en meses"
+        default: "12"
+      max_candidatas:
+        description: "Límite de convocatorias a evaluar (0 = todas; útil para pruebas)"
+        default: "0"
+      salida:
+        description: "Ruta del JSON (en pruebas usa /tmp/... para no tocar producción)"
+        default: "data/ayudas.json"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "ingesta"
+  cancel-in-progress: false
+
+jobs:
+  ingesta:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Ejecutar ingesta (ritmo prudente)
+        run: |
+          python ingest/fetch_bdns.py \
+            --meses "${{ github.event.inputs.meses || '12' }}" \
+            --max-candidatas "${{ github.event.inputs.max_candidatas || '0' }}" \
+            --salida "${{ github.event.inputs.salida || 'data/ayudas.json' }}" \
+            --workers 3 --delay 0.12
+
+      - name: Publicar cambios si los hay
+        run: |
+          git config user.name "radar-bot"
+          git config user.email "GIx2p@users.noreply.github.com"
+          if git diff --quiet -- data/ayudas.json; then
+            echo "Sin cambios en el catálogo."
+          else
+            total=$(python -c "import json;print(json.load(open('data/ayudas.json',encoding='utf-8'))['total'])")
+            git add data/ayudas.json
+            git commit -m "Actualización automática del catálogo: ${total} ayudas abiertas"
+            git push
+            echo "Catálogo actualizado y publicado (${total} ayudas)."
+          fi
