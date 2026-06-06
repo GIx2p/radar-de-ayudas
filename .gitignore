@@ -26,3 +26,7 @@ Thumbs.db
 ingest/.cache/
 ingest/raw/
 *.tmp
+
+# Copia del catálogo junto a la web (solo para previsualización local; en producción la pone el CI)
+web/ayudas.json
+ingest/run.log

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Radar de Ayudas — ayudas y subvenciones abiertas en España</title>
+  <meta name="description" content="Catálogo público y abierto de ayudas y subvenciones para personas y familias en España, a partir de datos oficiales de la BDNS." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="cabecera">
+    <div class="contenedor">
+      <h1>Radar de Ayudas</h1>
+      <p class="lema">Ayudas y subvenciones <strong>abiertas</strong> para personas y familias en España. Datos oficiales, sin rodeos.</p>
+    </div>
+  </header>
+
+  <main class="contenedor">
+    <section class="controles" aria-label="Búsqueda y filtros">
+      <div class="campo campo-busqueda">
+        <label for="busqueda">Buscar</label>
+        <input type="search" id="busqueda" placeholder="Palabra clave: beca, vivienda, dependencia, educación…" autocomplete="off" />
+      </div>
+      <div class="campo">
+        <label for="f-ambito">Ámbito</label>
+        <select id="f-ambito"><option value="">Todos</option></select>
+      </div>
+      <div class="campo">
+        <label for="f-comunidad">Comunidad / territorio</label>
+        <select id="f-comunidad"><option value="">Todas</option></select>
+      </div>
+      <div class="campo">
+        <label for="f-finalidad">Finalidad</label>
+        <select id="f-finalidad"><option value="">Todas</option></select>
+      </div>
+      <button id="limpiar" class="btn-limpiar" type="button">Limpiar filtros</button>
+    </section>
+
+    <p id="resumen" class="resumen" role="status" aria-live="polite">Cargando ayudas…</p>
+
+    <ul id="resultados" class="resultados" aria-label="Listado de ayudas"></ul>
+
+    <p id="vacio" class="vacio" hidden>No hay ayudas que coincidan con tu búsqueda. Prueba a quitar algún filtro.</p>
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor">
+      <p>
+        Fuente: <a id="fuente-enlace" href="https://www.infosubvenciones.es/bdnstrans/es/index" target="_blank" rel="noopener">Sistema Nacional de Publicidad de Subvenciones (BDNS)</a>.
+        Esta web es un <strong>radar informativo sin datos personales</strong>; verifica siempre los datos en la fuente oficial antes de solicitar.
+      </p>
+      <p id="actualizado" class="actualizado"></p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
