@@ -215,10 +215,12 @@ function construyeChips() {
     b.dataset.circ = c;
     b.setAttribute("aria-pressed", "false");
     b.innerHTML = `${escapa(CIRC_LABELS[c])} <span class="chip-n">${cuenta[c]}</span>`;
+    // Un clic selecciona; doble clic quita.
     b.addEventListener("click", () => {
-      if (circSel.has(c)) { circSel.delete(c); b.setAttribute("aria-pressed", "false"); }
-      else { circSel.add(c); b.setAttribute("aria-pressed", "true"); }
-      aplica();
+      if (!circSel.has(c)) { circSel.add(c); b.setAttribute("aria-pressed", "true"); aplica(); }
+    });
+    b.addEventListener("dblclick", () => {
+      if (circSel.has(c)) { circSel.delete(c); b.setAttribute("aria-pressed", "false"); aplica(); }
     });
     cont.appendChild(b);
   });
@@ -246,22 +248,14 @@ async function init() {
     console.error(e);
   }
 
-  ["input", "change"].forEach((ev) => {
-    $("busqueda").addEventListener(ev, aplica);
-    $("f-comunidad").addEventListener(ev, aplica);
-    $("f-finalidad").addEventListener(ev, aplica);
-  });
+  // Los desplegables filtran al instante; la búsqueda por texto se ejecuta
+  // al pulsar "Buscar" o Enter.
+  $("f-comunidad").addEventListener("change", aplica);
+  $("f-finalidad").addEventListener("change", aplica);
+  $("buscar").addEventListener("click", aplica);
+  $("busqueda").addEventListener("keydown", (e) => { if (e.key === "Enter") aplica(); });
   const chkOtras = $("incluir-otras");
   if (chkOtras) chkOtras.addEventListener("change", () => { incluirOtras = chkOtras.checked; aplica(); });
-  $("limpiar").addEventListener("click", () => {
-    $("busqueda").value = "";
-    $("f-comunidad").value = ""; $("f-finalidad").value = "";
-    circSel.clear();
-    document.querySelectorAll(".chip[aria-pressed='true']").forEach((b) => b.setAttribute("aria-pressed", "false"));
-    incluirOtras = false;
-    if (chkOtras) chkOtras.checked = false;
-    aplica();
-  });
 }
 
 init();
