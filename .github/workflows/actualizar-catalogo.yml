@@ -43,6 +43,12 @@ jobs:
             --salida "${{ github.event.inputs.salida || 'data/ayudas.json' }}" \
             --workers 3 --delay 0.12
 
+      - name: Verificar enlaces (marcar los rotos)
+        run: |
+          python ingest/verificar_enlaces.py \
+            --catalogo "${{ github.event.inputs.salida || 'data/ayudas.json' }}" \
+            --workers 20
+
       - name: Publicar cambios si los hay
         run: |
           git config user.name "radar-bot"

@@ -24,6 +24,7 @@ Thumbs.db
 
 # Datos temporales de la ingesta (los crudos no se versionan; sí el JSON normalizado en data/)
 ingest/.cache/
+ingest/.cache_enlaces.json
 ingest/raw/
 *.tmp
 

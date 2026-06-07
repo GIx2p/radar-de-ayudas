@@ -156,6 +156,19 @@ def limpia_url(v):
     return s
 
 
+def esta_abierta(a: dict, hoy: str) -> bool:
+    """Una ayuda está abierta para solicitar si:
+    - BDNS la marca como `abierto=True` (programas sin plazo, siempre abiertos), o
+    - hoy cae dentro del plazo de solicitud [fecha_inicio, fecha_fin].
+    OJO: el flag `abierto` de BDNS NO equivale a "en plazo"; muchas convocatorias
+    de concurrencia competitiva con plazo vigente vienen con abierto=False.
+    """
+    if a.get("abierto") is True:
+        return True
+    ini, fin = a.get("fecha_inicio"), a.get("fecha_fin")
+    return bool(ini and fin and ini <= hoy <= fin)
+
+
 def _lista_desc(valores):
     out = []
     for v in valores or []:
@@ -263,11 +276,14 @@ def main():
             if i % 250 == 0:
                 print(f"    · detalle {i}/{len(nums)}  ({time.time()-t0:.0f}s)", file=sys.stderr)
 
-    # 3) Normalizar + filtrar abiertas
+    # 3) Normalizar + filtrar abiertas (abierto=True O dentro del plazo de solicitud)
+    hoy = date.today().isoformat()
     ayudas = [normalizar(d) for d in detalles]
     if not args.todas:
-        ayudas = [a for a in ayudas if a.get("abierto") is True]
-    # ordena por fecha de fin de solicitud ascendente (las que vencen antes, primero)
+        ayudas = [a for a in ayudas if esta_abierta(a, hoy)]
+    for a in ayudas:
+        a["sin_plazo"] = a.get("fecha_fin") is None  # programa sin fecha de cierre
+    # ordena: las que vencen antes primero; las sin plazo, al final
     ayudas.sort(key=lambda a: a.get("fecha_fin") or "9999-99-99")
 
     salida = {

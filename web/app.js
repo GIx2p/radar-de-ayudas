@@ -74,6 +74,26 @@ function escapa(t) {
   return div.innerHTML;
 }
 
+// Analiza la forma de una URL para etiquetarla con sentido.
+function urlInfo(href) {
+  try {
+    const u = new URL(href);
+    const path = u.pathname.replace(/\/+$/, "");
+    return { bare: path === "", pdf: /\.pdf$/i.test(u.pathname) };
+  } catch (_) {
+    return { bare: false, pdf: false };
+  }
+}
+function etiquetaBases(href) {
+  const i = urlInfo(href);
+  if (i.pdf) return "Bases (PDF)";
+  if (i.bare) return "Web del organismo";       // solo el dominio, no la ayuda concreta
+  return "Ver bases y convocatoria";
+}
+function etiquetaSede(href) {
+  return urlInfo(href).bare ? "Sede electrónica del organismo" : "Ir a la sede para solicitar";
+}
+
 // --------------------------------------------------------------------------- //
 // Filtros (rellenar selects)
 // --------------------------------------------------------------------------- //
@@ -108,7 +128,10 @@ function tarjeta(a) {
   if (terr) badges.push(`<span class="badge">${escapa(capitaliza(terr))}</span>`);
   if (a.finalidad) badges.push(`<span class="badge">${escapa(a.finalidad)}</span>`);
   const dias = diasRestantes(a.fecha_fin);
-  if (dias != null && dias >= 0) badges.push(`<span class="badge plazo">Cierra en ${dias} día${dias === 1 ? "" : "s"}</span>`);
+  if (dias != null && dias >= 0) {
+    const txt = dias === 0 ? "Cierra hoy" : `Cierra en ${dias} día${dias === 1 ? "" : "s"}`;
+    badges.push(`<span class="badge plazo">${txt}</span>`);
+  }
 
   const meta = [];
   if (a.organo) meta.push(`<span><b>Convoca:</b> ${escapa(a.organo)}</span>`);
@@ -118,10 +141,12 @@ function tarjeta(a) {
   if (ff) meta.push(`<span><b>Plazo hasta:</b> ${escapa(ff)}</span>`);
 
   // Enlaces, en orden de utilidad: sede (solicitar) > bases > ficha BDNS.
-  // El primero disponible se muestra como botón principal.
+  // Se ocultan los marcados como "muerto"; la ficha de BDNS queda de red de seguridad.
   const posibles = [];
-  if (a.sede_electronica) posibles.push([a.sede_electronica, "Ir a la sede para solicitar"]);
-  if (a.url_bases) posibles.push([a.url_bases, "Ver bases y convocatoria"]);
+  if (a.sede_electronica && a.sede_estado !== "muerto")
+    posibles.push([a.sede_electronica, etiquetaSede(a.sede_electronica)]);
+  if (a.url_bases && a.bases_estado !== "muerto")
+    posibles.push([a.url_bases, etiquetaBases(a.url_bases)]);
   if (a.url_ficha) posibles.push([a.url_ficha, "Ficha en BDNS"]);
   const enlaces = posibles.map(([href, txt], i) =>
     `<a class="${i === 0 ? "principal" : "secundario"}" href="${escapa(href)}" target="_blank" rel="noopener">${escapa(txt)}</a>`);
