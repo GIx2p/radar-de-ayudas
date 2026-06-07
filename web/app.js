@@ -113,7 +113,6 @@ function rellenaSelect(sel, valores) {
 }
 
 function inicializaFiltros() {
-  rellenaSelect($("f-ambito"), opcionesUnicas(TODAS.map((a) => a.ambito)));
   rellenaSelect($("f-comunidad"), opcionesUnicas(TODAS.map(territorio)));
   rellenaSelect($("f-finalidad"), opcionesUnicas(TODAS.map((a) => a.finalidad)));
 }
@@ -165,12 +164,10 @@ function tarjeta(a) {
 
 function aplica() {
   const q = $("busqueda").value.trim().toLowerCase();
-  const amb = $("f-ambito").value;
   const com = $("f-comunidad").value;
   const fin = $("f-finalidad").value;
 
   const filtradas = TODAS.filter((a) => {
-    if (amb && a.ambito !== amb) return false;
     if (com && territorio(a) !== com) return false;
     if (fin && a.finalidad !== fin) return false;
     // Circunstancias: si hay marcadas, debe casar al menos una.
@@ -251,14 +248,13 @@ async function init() {
 
   ["input", "change"].forEach((ev) => {
     $("busqueda").addEventListener(ev, aplica);
-    $("f-ambito").addEventListener(ev, aplica);
     $("f-comunidad").addEventListener(ev, aplica);
     $("f-finalidad").addEventListener(ev, aplica);
   });
   const chkOtras = $("incluir-otras");
   if (chkOtras) chkOtras.addEventListener("change", () => { incluirOtras = chkOtras.checked; aplica(); });
   $("limpiar").addEventListener("click", () => {
-    $("busqueda").value = ""; $("f-ambito").value = "";
+    $("busqueda").value = "";
     $("f-comunidad").value = ""; $("f-finalidad").value = "";
     circSel.clear();
     document.querySelectorAll(".chip[aria-pressed='true']").forEach((b) => b.setAttribute("aria-pressed", "false"));

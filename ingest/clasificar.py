@@ -36,36 +36,34 @@ def na(texto: str) -> str:
 
 # Etiqueta -> nombre legible + palabras clave (ya sin acentos).
 # El orden no importa; una ayuda puede tener varias circunstancias.
+# SOLO autodescripciones de la persona/familia (lo que el usuario dice de SÍ MISMO).
+# Los TEMAS de la ayuda (vivienda, cultura, energía…) NO van aquí: son otro eje (finalidad).
 CIRCUNSTANCIAS = {
-    "discapacidad":      ("Discapacidad",            ["discapacid", "minusval", "diversidad funcional", "gran invalid"]),
-    "dependencia":       ("Dependencia y cuidados",  ["dependencia", "gran dependiente", "autonomia personal", "cuidados de larga"]),
-    "familia_numerosa":  ("Familia numerosa",        ["familia numerosa", "familias numerosas"]),
-    "monoparental":      ("Familia monoparental",    ["monoparental", "monomarental"]),
-    "desempleo":         ("Desempleo",               ["desemple", "parad", "demandante de empleo", "insercion laboral", "busqueda de empleo", "larga duracion", "mayores de 45", "mayores de 52", "recualificac"]),
-    "hijos_natalidad":   ("Hijos y natalidad",       ["natalidad", "nacimiento", "hijo", "menores", "infancia", "conciliacion", "guarderia", "escuela infantil", "cheque bebe", "ayuda al nacimiento", "0-3", "primer ciclo"]),
-    "vivienda":          ("Vivienda y alquiler",     ["vivienda", "alquiler", "hipoteca", "emancipacion", "arrendamiento", "fianza", "suministros minimos vitales", "pobreza energetica"]),
-    "estudios_becas":    ("Estudios y becas",        ["beca", "estudiant", "material escolar", "comedor escolar", "transporte escolar", "universi", "formacion", "matricula", "libros de texto", "ayuda al estudio"]),
-    "mayores":           ("Personas mayores",        ["mayores", "tercera edad", "pensionist", "envejecimiento", "personas de edad"]),
-    "jovenes":           ("Jóvenes",                 ["joven", "juventud"]),
-    "mujer":             ("Mujer e igualdad",        ["mujer", "mujeres"]),
-    "violencia_genero":  ("Violencia de género",     ["violencia de genero", "violencia machista", "victimas de violencia", "violencia sobre la mujer"]),
-    "salud":             ("Salud y enfermedad",      ["enferm", "tratamiento medic", "oftalm", "optic", "dental", "protesis", "audifono", "farmac", "rehabilitacion funcional", "salud mental", "oncolog"]),
-    "cuidadores":        ("Personas cuidadoras",     ["cuidador", "persona cuidadora"]),
-    "vulnerabilidad":    ("Vulnerabilidad y emergencia", ["emergencia social", "vulnerabilidad", "exclusion", "pobreza", "necesidades basicas", "ayuda de emergencia", "atencion social", "situacion de necesidad", "renta minima", "ingreso minimo", "garantia alimentaria", "ayuda asistencial", "beneficas y asistenciales", "prestaciones sociales"]),
-    "migracion":         ("Migración y retorno",     ["migrant", "inmigra", "refugiad", "retorno", "asilo"]),
-    "energia_vivienda":  ("Rehabilitación y energía del hogar", ["rehabilitacion de vivienda", "eficiencia energetica", "autoconsumo", "placas solares", "fotovoltaic", "aislamiento", "rehabilitacion energetica", "calefaccion"]),
-    "rural":             ("Medio rural",             ["medio rural", "despoblacion", "nucleo rural", "zona rural"]),
-    # Opt-in / no es bienestar familiar por defecto:
-    "autonomo":          ("Autónomos y emprendimiento", ["autonomo", "cuenta propia", "emprend", "autoempleo", "cuota cero", "autoocupacion"]),
-    "cultura_deporte":   ("Cultura y deporte",       ["cultura", "cultural", "music", "danza", "arte", "pintura", "grabado", "banda", "cabalgata", "fiesta", "certamen", "concurso", "premio", "deporte", "deportiv", "festival", "carnaval", "belen", "teatro"]),
+    "discapacidad":      ("Discapacidad",                    ["discapacid", "minusval", "diversidad funcional", "gran invalid"]),
+    "desempleo":         ("En paro / busco empleo",          ["desemple", "parad", "demandante de empleo", "insercion laboral", "busqueda de empleo", "larga duracion", "mayores de 45", "mayores de 52", "recualificac"]),
+    "familia_numerosa":  ("Familia numerosa",                ["familia numerosa", "familias numerosas"]),
+    "monoparental":      ("Familia monoparental",            ["monoparental", "monomarental"]),
+    "hijos":             ("Tengo hijos (o voy a tenerlos)",  ["natalidad", "nacimiento", "hijo", "menores", "infancia", "conciliacion", "guarderia", "escuela infantil", "cheque bebe", "ayuda al nacimiento", "0-3", "primer ciclo"]),
+    "dependencia":       ("Dependencia (mía o de un familiar)", ["dependencia", "gran dependiente", "autonomia personal", "cuidados de larga"]),
+    "cuidadores":        ("Persona cuidadora",               ["cuidador", "persona cuidadora"]),
+    "mayores":           ("Persona mayor",                   ["mayores", "tercera edad", "pensionist", "envejecimiento", "personas de edad"]),
+    "jovenes":           ("Joven",                           ["joven", "juventud"]),
+    "mujer":             ("Mujer",                           ["mujer", "mujeres"]),
+    "violencia_genero":  ("Víctima de violencia de género",  ["violencia de genero", "violencia machista", "victimas de violencia", "violencia sobre la mujer"]),
+    "estudiante":        ("Estudiante (yo o mis hijos)",     ["beca", "estudiant", "material escolar", "comedor escolar", "transporte escolar", "universi", "formacion", "matricula", "libros de texto", "ayuda al estudio"]),
+    "salud":             ("Enfermedad o problema de salud",  ["enferm", "tratamiento medic", "oftalm", "optic", "dental", "protesis", "audifono", "farmac", "rehabilitacion funcional", "salud mental", "oncolog"]),
+    "vulnerabilidad":    ("Pocos ingresos / vulnerabilidad", ["emergencia social", "vulnerabilidad", "exclusion", "pobreza", "necesidades basicas", "ayuda de emergencia", "atencion social", "situacion de necesidad", "renta minima", "ingreso minimo", "garantia alimentaria", "ayuda asistencial", "beneficas y asistenciales", "prestaciones sociales"]),
+    "migracion":         ("Migrante o retornado/a",          ["migrant", "inmigra", "refugiad", "retorno", "asilo"]),
+    "rural":             ("Vivo en zona rural",              ["medio rural", "despoblacion", "nucleo rural", "zona rural"]),
+    "autonomo":          ("Autónomo/a",                      ["autonomo", "cuenta propia", "emprend", "autoempleo", "cuota cero", "autoocupacion"]),
 }
 
 # Circunstancias que cuentan como "bienestar familiar" (visibles por defecto).
+# Se excluyen autónomo (opt-in) y rural (geográfico): solo aparecen si se marcan.
 FAMILIARES = {
-    "discapacidad", "dependencia", "familia_numerosa", "monoparental", "desempleo",
-    "hijos_natalidad", "vivienda", "estudios_becas", "mayores", "jovenes", "mujer",
-    "violencia_genero", "salud", "cuidadores", "vulnerabilidad", "migracion",
-    "energia_vivienda",
+    "discapacidad", "desempleo", "familia_numerosa", "monoparental", "hijos",
+    "dependencia", "cuidadores", "mayores", "jovenes", "mujer", "violencia_genero",
+    "estudiante", "salud", "vulnerabilidad", "migracion",
 }
 
 # Finalidades de BDNS que son de bienestar (relevantes aunque el título no case).
