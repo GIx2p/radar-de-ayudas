@@ -4,6 +4,9 @@
 const RUTAS_DATOS = ["ayudas.json", "../data/ayudas.json", "data/ayudas.json"];
 
 let TODAS = [];
+let CIRC_LABELS = {};
+const circSel = new Set();   // circunstancias marcadas por el usuario
+let incluirOtras = false;    // incluir también las no relevantes (cultura, eventos…)
 
 const $ = (id) => document.getElementById(id);
 
@@ -170,6 +173,16 @@ function aplica() {
     if (amb && a.ambito !== amb) return false;
     if (com && territorio(a) !== com) return false;
     if (fin && a.finalidad !== fin) return false;
+    // Circunstancias: si hay marcadas, debe casar al menos una.
+    if (circSel.size) {
+      const cs = a.circunstancias || [];
+      let casa = false;
+      for (const c of circSel) if (cs.includes(c)) { casa = true; break; }
+      if (!casa) return false;
+    } else if (!incluirOtras && a.relevancia_familiar === false) {
+      // Sin circunstancias marcadas: por defecto solo bienestar familiar.
+      return false;
+    }
     if (q) {
       const texto = [a.titulo, a.organo, a.finalidad, a.comunidad, (a.regiones || []).join(" ")]
         .join(" ").toLowerCase();
@@ -181,9 +194,37 @@ function aplica() {
   const ul = $("resultados");
   ul.innerHTML = "";
   filtradas.forEach((a) => ul.appendChild(tarjeta(a)));
-  $("resumen").textContent = `${filtradas.length} ayuda${filtradas.length === 1 ? "" : "s"} abierta${filtradas.length === 1 ? "" : "s"}` +
-    (filtradas.length !== TODAS.length ? ` (de ${TODAS.length} en total)` : "");
-  $("vacio").hidden = filtradas.length !== 0;
+  const n = filtradas.length;
+  let cola;
+  if (circSel.size) cola = n === 1 ? " que puede corresponderte" : " que pueden corresponderte";
+  else if (!incluirOtras) cola = " para personas y familias";
+  else cola = " abiertas";
+  $("resumen").textContent = `${n} ayuda${n === 1 ? "" : "s"}` + cola;
+  $("vacio").hidden = n !== 0;
+}
+
+// Construye los "chips" de circunstancias a partir del catálogo.
+function construyeChips() {
+  const cont = $("chips");
+  if (!cont) return;
+  const cuenta = {};
+  TODAS.forEach((a) => (a.circunstancias || []).forEach((c) => { cuenta[c] = (cuenta[c] || 0) + 1; }));
+  const claves = Object.keys(CIRC_LABELS).filter((c) => cuenta[c]).sort((a, b) => cuenta[b] - cuenta[a]);
+  cont.innerHTML = "";
+  claves.forEach((c) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip";
+    b.dataset.circ = c;
+    b.setAttribute("aria-pressed", "false");
+    b.innerHTML = `${escapa(CIRC_LABELS[c])} <span class="chip-n">${cuenta[c]}</span>`;
+    b.addEventListener("click", () => {
+      if (circSel.has(c)) { circSel.delete(c); b.setAttribute("aria-pressed", "false"); }
+      else { circSel.add(c); b.setAttribute("aria-pressed", "true"); }
+      aplica();
+    });
+    cont.appendChild(b);
+  });
 }
 
 // --------------------------------------------------------------------------- //
@@ -193,7 +234,9 @@ async function init() {
   try {
     const datos = await cargar();
     TODAS = datos.ayudas || [];
+    CIRC_LABELS = datos.circunstancias_catalogo || {};
     inicializaFiltros();
+    construyeChips();
     aplica();
     if (datos.generado) {
       const f = new Date(datos.generado);
@@ -212,9 +255,15 @@ async function init() {
     $("f-comunidad").addEventListener(ev, aplica);
     $("f-finalidad").addEventListener(ev, aplica);
   });
+  const chkOtras = $("incluir-otras");
+  if (chkOtras) chkOtras.addEventListener("change", () => { incluirOtras = chkOtras.checked; aplica(); });
   $("limpiar").addEventListener("click", () => {
     $("busqueda").value = ""; $("f-ambito").value = "";
     $("f-comunidad").value = ""; $("f-finalidad").value = "";
+    circSel.clear();
+    document.querySelectorAll(".chip[aria-pressed='true']").forEach((b) => b.setAttribute("aria-pressed", "false"));
+    incluirOtras = false;
+    if (chkOtras) chkOtras.checked = false;
     aplica();
   });
 }

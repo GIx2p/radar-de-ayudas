@@ -16,6 +16,12 @@
   </header>
 
   <main class="contenedor">
+    <section class="situacion" aria-label="Tu situación">
+      <h2>¿Cuál es tu situación?</h2>
+      <p class="situacion-sub">Marca lo que te aplique y verás las ayudas que te pueden corresponder. Si no marcas nada, verás todas las de bienestar para personas y familias.</p>
+      <div id="chips" class="chips" role="group" aria-label="Circunstancias"></div>
+    </section>
+
     <section class="controles" aria-label="Búsqueda y filtros">
       <div class="campo campo-busqueda">
         <label for="busqueda">Buscar</label>
@@ -36,7 +42,10 @@
       <button id="limpiar" class="btn-limpiar" type="button">Limpiar filtros</button>
     </section>
 
-    <p id="resumen" class="resumen" role="status" aria-live="polite">Cargando ayudas…</p>
+    <div class="barra-resumen">
+      <p id="resumen" class="resumen" role="status" aria-live="polite">Cargando ayudas…</p>
+      <label class="incluir-otras"><input type="checkbox" id="incluir-otras" /> Incluir también cultura, eventos y otras</label>
+    </div>
 
     <ul id="resultados" class="resultados" aria-label="Listado de ayudas"></ul>
 

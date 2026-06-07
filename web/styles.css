@@ -104,6 +104,32 @@ a { color: var(--acento-osc); }
 .pie p { margin: .3rem 0; }
 .actualizado { font-size: .8rem; opacity: .8; }
 
+/* Situación / circunstancias */
+.situacion { margin-top: 1.6rem; }
+.situacion h2 { font-size: 1.2rem; margin: 0 0 .2rem; }
+.situacion-sub { margin: 0 0 .8rem; color: var(--tinta-suave); font-size: .9rem; max-width: 70ch; }
+.chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+.chip {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .42rem .85rem; border: 1px solid var(--borde); background: #fff;
+  border-radius: 999px; cursor: pointer; font-size: .9rem; color: var(--tinta);
+  transition: background .12s, color .12s, border-color .12s;
+}
+.chip:hover { border-color: var(--acento); }
+.chip[aria-pressed="true"] { background: var(--acento); color: #fff; border-color: var(--acento); }
+.chip-n { font-size: .75rem; opacity: .65; }
+.chip[aria-pressed="true"] .chip-n { opacity: .9; }
+
+.barra-resumen {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: .5rem; margin: 1.5rem 0 .8rem;
+}
+.barra-resumen .resumen { margin: 0; }
+.incluir-otras {
+  font-size: .85rem; color: var(--tinta-suave);
+  display: inline-flex; align-items: center; gap: .4rem; cursor: pointer;
+}
+
 @media (max-width: 820px) {
   .controles { grid-template-columns: 1fr 1fr; }
   .campo-busqueda { grid-column: 1 / -1; }

@@ -49,6 +49,11 @@ jobs:
             --catalogo "${{ github.event.inputs.salida || 'data/ayudas.json' }}" \
             --workers 20
 
+      - name: Clasificar por circunstancias
+        run: |
+          python ingest/clasificar.py \
+            --catalogo "${{ github.event.inputs.salida || 'data/ayudas.json' }}"
+
       - name: Publicar cambios si los hay
         run: |
           git config user.name "radar-bot"
