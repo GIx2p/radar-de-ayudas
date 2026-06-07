@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import time
 import urllib.parse
@@ -40,7 +41,7 @@ from pathlib import Path
 BASE = "https://www.infosubvenciones.es/bdnstrans/api"
 EP_BUSQUEDA = f"{BASE}/convocatorias/busqueda"
 EP_DETALLE = f"{BASE}/convocatorias"
-PORTAL_FICHA = "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatoria"
+PORTAL_FICHA = "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias"
 
 VPD = "GE"  # portal general (todo el Estado)
 USER_AGENT = "radar-de-ayudas/0.1 (proyecto sin ánimo de lucro; datos abiertos BDNS)"
@@ -142,6 +143,19 @@ def obtener_detalle(num_conv: str, usar_cache: bool = True, delay: float = 0.0):
     return datos
 
 
+def limpia_url(v):
+    """Normaliza una URL: quita espacios (incluidos los internos erróneos) y
+    añade https:// si falta el esquema. Devuelve None si queda vacía."""
+    if not v:
+        return None
+    s = "".join(str(v).split())  # elimina todos los espacios en blanco
+    if not s:
+        return None
+    if not re.match(r"^https?://", s, re.I):
+        s = "https://" + s.lstrip("/")
+    return s
+
+
 def _lista_desc(valores):
     out = []
     for v in valores or []:
@@ -178,9 +192,9 @@ def normalizar(detalle: dict) -> dict:
         "fecha_inicio": detalle.get("fechaInicioSolicitud"),
         "fecha_fin": detalle.get("fechaFinSolicitud"),
         "fecha_recepcion": detalle.get("fechaRecepcion"),
-        "url_bases": (detalle.get("urlBasesReguladoras") or "").strip() or None,
-        "sede_electronica": detalle.get("sedeElectronica"),
-        "url_ficha": f"{PORTAL_FICHA}/{interno}" if interno else None,
+        "url_bases": limpia_url(detalle.get("urlBasesReguladoras")),
+        "sede_electronica": limpia_url(detalle.get("sedeElectronica")),
+        "url_ficha": f"{PORTAL_FICHA}/{detalle.get('codigoBDNS')}" if detalle.get("codigoBDNS") else None,
         "documentos": documentos,
     }
 

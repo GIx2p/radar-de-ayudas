@@ -117,10 +117,14 @@ function tarjeta(a) {
   const ff = fmtFecha(a.fecha_fin);
   if (ff) meta.push(`<span><b>Plazo hasta:</b> ${escapa(ff)}</span>`);
 
-  const enlaces = [];
-  if (a.sede_electronica) enlaces.push(`<a class="principal" href="${escapa(a.sede_electronica)}" target="_blank" rel="noopener">Ir a la sede para solicitar</a>`);
-  if (a.url_ficha) enlaces.push(`<a class="secundario" href="${escapa(a.url_ficha)}" target="_blank" rel="noopener">Ficha oficial (BDNS)</a>`);
-  if (a.url_bases) enlaces.push(`<a class="secundario" href="${escapa(a.url_bases)}" target="_blank" rel="noopener">Bases reguladoras</a>`);
+  // Enlaces, en orden de utilidad: sede (solicitar) > bases > ficha BDNS.
+  // El primero disponible se muestra como botón principal.
+  const posibles = [];
+  if (a.sede_electronica) posibles.push([a.sede_electronica, "Ir a la sede para solicitar"]);
+  if (a.url_bases) posibles.push([a.url_bases, "Ver bases y convocatoria"]);
+  if (a.url_ficha) posibles.push([a.url_ficha, "Ficha en BDNS"]);
+  const enlaces = posibles.map(([href, txt], i) =>
+    `<a class="${i === 0 ? "principal" : "secundario"}" href="${escapa(href)}" target="_blank" rel="noopener">${escapa(txt)}</a>`);
 
   li.innerHTML = `
     <div class="badges">${badges.join("")}</div>
