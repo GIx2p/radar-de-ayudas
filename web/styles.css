@@ -131,6 +131,22 @@ a { color: var(--acento-osc); }
   display: inline-flex; align-items: center; gap: .4rem; cursor: pointer;
 }
 
+/* Bloques de "Tu situación" */
+.bloques { display: flex; flex-direction: column; gap: 1.1rem; }
+.bloque h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--tinta-suave); margin: 0 0 .5rem; }
+.grupo-paneles { display: flex; flex-direction: column; gap: .5rem; margin-top: .5rem; }
+.sit-panel { background: #eef4f2; border: 1px solid #d7e7e1; border-radius: 10px; padding: .55rem .75rem; }
+.sit-panel-titulo { display: block; font-weight: 600; font-size: .85rem; margin-bottom: .35rem; color: var(--acento-osc); }
+.sub-fila { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin: .25rem 0; }
+.sub-label { font-size: .78rem; color: var(--tinta-suave); font-weight: 600; margin-right: .2rem; }
+.minichip { font-size: .8rem; padding: .25rem .6rem; border-radius: 999px; border: 1px solid var(--borde); background: #fff; color: var(--tinta); cursor: pointer; }
+.minichip:hover { border-color: var(--acento); }
+.minichip[aria-pressed="true"] { background: var(--acento); color: #fff; border-color: var(--acento); }
+.acciones-perfil { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-top: 1rem; }
+.btn-secundario { font-size: .85rem; padding: .42rem .85rem; border: 1px solid var(--borde); background: #fff; border-radius: 8px; cursor: pointer; color: var(--tinta); }
+.btn-secundario:hover { border-color: var(--acento); color: var(--acento-osc); }
+.perfil-aviso { font-size: .82rem; color: var(--acento-osc); font-weight: 600; }
+
 @media (max-width: 820px) {
   .controles { grid-template-columns: 1fr 1fr; }
   .campo-busqueda { grid-column: 1 / -1; }

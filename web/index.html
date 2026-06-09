@@ -18,8 +18,13 @@
   <main class="contenedor">
     <section class="situacion" aria-label="Tu situación">
       <h2>¿Cuál es tu situación?</h2>
-      <p class="situacion-sub">Marca lo que te aplique y verás las ayudas que te pueden corresponder. Si no marcas nada, verás todas las de bienestar para personas y familias.</p>
-      <div id="chips" class="chips" role="group" aria-label="Circunstancias"></div>
+      <p class="situacion-sub">Marca lo que te aplique. Al seleccionar, puedes detallar el grado, la edad y a quién afecta. Si no marcas nada, verás todas las ayudas de bienestar para personas y familias.</p>
+      <div id="bloques" class="bloques"></div>
+      <div class="acciones-perfil">
+        <button id="guardar-perfil" class="btn-secundario" type="button">💾 Guardar mis preferencias</button>
+        <button id="borrar-perfil" class="btn-secundario" type="button">Borrar</button>
+        <span id="perfil-aviso" class="perfil-aviso" role="status" aria-live="polite"></span>
+      </div>
     </section>
 
     <section class="controles" aria-label="Búsqueda y filtros">

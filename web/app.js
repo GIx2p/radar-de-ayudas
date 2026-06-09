@@ -5,8 +5,31 @@ const RUTAS_DATOS = ["ayudas.json", "../data/ayudas.json", "data/ayudas.json"];
 
 let TODAS = [];
 let CIRC_LABELS = {};
-const circSel = new Set();   // circunstancias marcadas por el usuario
 let incluirOtras = false;    // incluir también las no relevantes (cultura, eventos…)
+
+// --- Perfil de situación del usuario ---
+const perfilSel = new Set();   // claves de situación marcadas (para emparejar)
+const perfilDet = {};          // { clave: { sub:Set, aQuien:Set } } detalle por situación
+
+// Agrupación de situaciones en bloques. Las claves coinciden con las
+// circunstancias del catálogo (ingest/clasificar.py).
+const GRUPOS = [
+  ["Tu familia", ["familia_numerosa", "monoparental", "hijos", "dependencia", "cuidadores"]],
+  ["Tu situación personal", ["discapacidad", "salud", "violencia_genero", "migracion", "mujer"]],
+  ["Trabajo y economía", ["desempleo", "autonomo", "vulnerabilidad", "estudiante"]],
+  ["Edad y entorno", ["jovenes", "mayores", "rural"]],
+];
+// Subopciones (grado/edad/categoría) que se detallan al seleccionar una situación.
+const SUBOPC = {
+  discapacidad: ["33–64 %", "65 % o más", "Movilidad reducida"],
+  dependencia: ["Grado I", "Grado II", "Grado III"],
+  familia_numerosa: ["General", "Especial"],
+  desempleo: ["Larga duración", "Mayor de 45", "Mayor de 52"],
+  hijos: ["0–3 años", "3–6", "6–16", "16–25"],
+  jovenes: ["16–25", "26–30", "31–35"],
+  mayores: ["60–64", "65 o más"],
+};
+const A_QUIEN = ["Yo", "Mi pareja", "Un hijo/a", "Otro familiar a cargo"];
 
 const $ = (id) => document.getElementById(id);
 
@@ -219,10 +242,10 @@ function aplica() {
     }
     if (fin && a.finalidad !== fin) return false;
     // Circunstancias: si hay marcadas, debe casar al menos una.
-    if (circSel.size) {
+    if (perfilSel.size) {
       const cs = a.circunstancias || [];
       let casa = false;
-      for (const c of circSel) if (cs.includes(c)) { casa = true; break; }
+      for (const c of perfilSel) if (cs.includes(c)) { casa = true; break; }
       if (!casa) return false;
     } else if (!incluirOtras && a.relevancia_familiar === false) {
       // Sin circunstancias marcadas: por defecto solo bienestar familiar.
@@ -241,35 +264,118 @@ function aplica() {
   filtradas.forEach((a) => ul.appendChild(tarjeta(a)));
   const n = filtradas.length;
   let cola;
-  if (circSel.size) cola = n === 1 ? " que puede corresponderte" : " que pueden corresponderte";
+  if (perfilSel.size) cola = n === 1 ? " que puede corresponderte" : " que pueden corresponderte";
   else if (!incluirOtras) cola = " para personas y familias";
   else cola = " abiertas";
   $("resumen").textContent = `${n} ayuda${n === 1 ? "" : "s"}` + cola;
   $("vacio").hidden = n !== 0;
 }
 
-// Construye los "chips" de circunstancias a partir del catálogo.
-function construyeChips() {
-  const cont = $("chips");
-  if (!cont) return;
-  const cuenta = {};
-  TODAS.forEach((a) => (a.circunstancias || []).forEach((c) => { cuenta[c] = (cuenta[c] || 0) + 1; }));
-  const claves = Object.keys(CIRC_LABELS).filter((c) => cuenta[c]).sort((a, b) => cuenta[b] - cuenta[a]);
-  cont.innerHTML = "";
-  claves.forEach((c) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "chip";
-    b.dataset.circ = c;
-    b.setAttribute("aria-pressed", "false");
-    b.innerHTML = `${escapa(CIRC_LABELS[c])} <span class="chip-n">${cuenta[c]}</span>`;
-    // Un clic alterna: selecciona / deselecciona. La búsqueda se lanza con "Buscar".
-    b.addEventListener("click", () => {
-      if (circSel.has(c)) { circSel.delete(c); b.setAttribute("aria-pressed", "false"); }
-      else { circSel.add(c); b.setAttribute("aria-pressed", "true"); }
+// --------------------------------------------------------------------------- //
+// "Tu situación" en bloques, con subopciones y "¿a quién?"
+// --------------------------------------------------------------------------- //
+function miniChip(txt, on) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "minichip"; b.textContent = txt;
+  b.setAttribute("aria-pressed", on ? "true" : "false");
+  return b;
+}
+
+// Panel de detalle (subopciones + ¿a quién?) para una situación seleccionada.
+function panelDetalle(c) {
+  const det = perfilDet[c] || (perfilDet[c] = { sub: new Set(), aQuien: new Set() });
+  const wrap = document.createElement("div");
+  wrap.className = "sit-panel"; wrap.dataset.sit = c;
+  wrap.innerHTML = `<span class="sit-panel-titulo">${escapa(CIRC_LABELS[c])}</span>`;
+
+  const fila = (etiqueta, opciones, conjunto) => {
+    const f = document.createElement("div"); f.className = "sub-fila";
+    f.innerHTML = `<span class="sub-label">${etiqueta}</span>`;
+    opciones.forEach((o) => {
+      const b = miniChip(o, conjunto.has(o));
+      b.addEventListener("click", () => {
+        conjunto.has(o) ? conjunto.delete(o) : conjunto.add(o);
+        b.setAttribute("aria-pressed", conjunto.has(o) ? "true" : "false");
+      });
+      f.appendChild(b);
     });
-    cont.appendChild(b);
+    wrap.appendChild(f);
+  };
+  if (SUBOPC[c]) fila("Detalle:", SUBOPC[c], det.sub);
+  fila("¿A quién?", A_QUIEN, det.aQuien);
+  return wrap;
+}
+
+function construyeBloques() {
+  const cont = $("bloques");
+  if (!cont) return;
+  cont.innerHTML = "";
+  GRUPOS.forEach(([titulo, claves]) => {
+    const bloque = document.createElement("div");
+    bloque.className = "bloque";
+    bloque.innerHTML = `<h3>${escapa(titulo)}</h3>`;
+    const chips = document.createElement("div"); chips.className = "chips";
+    const paneles = document.createElement("div"); paneles.className = "grupo-paneles";
+    claves.forEach((c) => {
+      if (!CIRC_LABELS[c]) return;
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "chip"; b.dataset.sit = c;
+      b.textContent = CIRC_LABELS[c];
+      b.setAttribute("aria-pressed", perfilSel.has(c) ? "true" : "false");
+      if (perfilSel.has(c)) paneles.appendChild(panelDetalle(c));
+      b.addEventListener("click", () => {
+        if (perfilSel.has(c)) {
+          perfilSel.delete(c); delete perfilDet[c];
+          b.setAttribute("aria-pressed", "false");
+          const p = paneles.querySelector(`.sit-panel[data-sit="${c}"]`);
+          if (p) p.remove();
+        } else {
+          perfilSel.add(c);
+          b.setAttribute("aria-pressed", "true");
+          paneles.appendChild(panelDetalle(c));
+        }
+        // No se busca aquí: la búsqueda se lanza con el botón "Buscar".
+      });
+      chips.appendChild(b);
+    });
+    bloque.appendChild(chips);
+    bloque.appendChild(paneles);
+    cont.appendChild(bloque);
   });
+}
+
+// --- Guardar / cargar preferencias en el navegador (sin servidor) ---
+function avisoPerfil(m) {
+  const e = $("perfil-aviso");
+  if (e) { e.textContent = m; setTimeout(() => { e.textContent = ""; }, 2500); }
+}
+function guardaPerfil() {
+  const data = { sel: [...perfilSel], det: {}, incluirOtras };
+  for (const k of perfilSel) {
+    const d = perfilDet[k] || { sub: new Set(), aQuien: new Set() };
+    data.det[k] = { sub: [...d.sub], aQuien: [...d.aQuien] };
+  }
+  try { localStorage.setItem("radar_perfil", JSON.stringify(data)); avisoPerfil("Preferencias guardadas ✓"); }
+  catch (_) { avisoPerfil("No se pudieron guardar"); }
+}
+function cargaPerfil() {
+  try {
+    const data = JSON.parse(localStorage.getItem("radar_perfil") || "null");
+    if (!data) return;
+    (data.sel || []).forEach((k) => {
+      perfilSel.add(k);
+      const d = data.det && data.det[k] ? data.det[k] : {};
+      perfilDet[k] = { sub: new Set(d.sub || []), aQuien: new Set(d.aQuien || []) };
+    });
+    if (data.incluirOtras) incluirOtras = true;
+  } catch (_) { /* preferencias corruptas: se ignoran */ }
+}
+function borraPerfil() {
+  perfilSel.clear();
+  Object.keys(perfilDet).forEach((k) => delete perfilDet[k]);
+  try { localStorage.removeItem("radar_perfil"); } catch (_) {}
+  construyeBloques();
+  avisoPerfil("Preferencias borradas");
 }
 
 // --------------------------------------------------------------------------- //
@@ -280,9 +386,10 @@ async function init() {
     const datos = await cargar();
     TODAS = datos.ayudas || [];
     CIRC_LABELS = datos.circunstancias_catalogo || {};
+    cargaPerfil();
     inicializaFiltros();
     actualizaCiudades();
-    construyeChips();
+    construyeBloques();
     aplica();
     if (datos.generado) {
       const f = new Date(datos.generado);
@@ -303,7 +410,12 @@ async function init() {
   $("buscar").addEventListener("click", aplica);
   $("busqueda").addEventListener("keydown", (e) => { if (e.key === "Enter") aplica(); });
   const chkOtras = $("incluir-otras");
-  if (chkOtras) chkOtras.addEventListener("change", () => { incluirOtras = chkOtras.checked; });
+  if (chkOtras) {
+    chkOtras.checked = incluirOtras;
+    chkOtras.addEventListener("change", () => { incluirOtras = chkOtras.checked; });
+  }
+  const bG = $("guardar-perfil"); if (bG) bG.addEventListener("click", guardaPerfil);
+  const bB = $("borrar-perfil"); if (bB) bB.addEventListener("click", borraPerfil);
 }
 
 init();
