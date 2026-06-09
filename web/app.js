@@ -263,12 +263,10 @@ function construyeChips() {
     b.dataset.circ = c;
     b.setAttribute("aria-pressed", "false");
     b.innerHTML = `${escapa(CIRC_LABELS[c])} <span class="chip-n">${cuenta[c]}</span>`;
-    // Un clic selecciona; doble clic quita.
+    // Un clic alterna: selecciona / deselecciona. La búsqueda se lanza con "Buscar".
     b.addEventListener("click", () => {
-      if (!circSel.has(c)) { circSel.add(c); b.setAttribute("aria-pressed", "true"); aplica(); }
-    });
-    b.addEventListener("dblclick", () => {
-      if (circSel.has(c)) { circSel.delete(c); b.setAttribute("aria-pressed", "false"); aplica(); }
+      if (circSel.has(c)) { circSel.delete(c); b.setAttribute("aria-pressed", "false"); }
+      else { circSel.add(c); b.setAttribute("aria-pressed", "true"); }
     });
     cont.appendChild(b);
   });
@@ -299,13 +297,13 @@ async function init() {
 
   // Los desplegables filtran al instante; la búsqueda por texto se ejecuta
   // al pulsar "Buscar" o Enter.
-  $("f-ccaa").addEventListener("change", () => { actualizaCiudades(); aplica(); });
-  $("f-ciudad").addEventListener("change", aplica);
-  $("f-finalidad").addEventListener("change", aplica);
+  // La búsqueda NO es automática: solo se ejecuta al pulsar "Buscar" o Enter.
+  // Los demás controles solo actualizan su estado (sin relanzar la búsqueda).
+  $("f-ccaa").addEventListener("change", actualizaCiudades);
   $("buscar").addEventListener("click", aplica);
   $("busqueda").addEventListener("keydown", (e) => { if (e.key === "Enter") aplica(); });
   const chkOtras = $("incluir-otras");
-  if (chkOtras) chkOtras.addEventListener("change", () => { incluirOtras = chkOtras.checked; aplica(); });
+  if (chkOtras) chkOtras.addEventListener("change", () => { incluirOtras = chkOtras.checked; });
 }
 
 init();
