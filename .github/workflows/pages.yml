@@ -32,6 +32,11 @@ jobs:
           cp -r web/* _site/
           # El catálogo se sirve junto al index para que app.js lo encuentre.
           cp data/ayudas.json _site/ayudas.json
+          # Cache-busting: versiona app.js y styles.css con el hash del commit,
+          # para que el navegador nunca sirva una versión antigua.
+          ver="${GITHUB_SHA::8}"
+          sed -i "s|href=\"styles.css\"|href=\"styles.css?v=$ver\"|; s|src=\"app.js\"|src=\"app.js?v=$ver\"|" _site/index.html
+          echo "Versión de assets: $ver"
 
       - name: Configurar Pages
         uses: actions/configure-pages@v5

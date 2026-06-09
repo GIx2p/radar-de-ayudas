@@ -45,6 +45,30 @@ function capitaliza(t) {
   return t.length > 60 ? t : t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
 }
 
+// Códigos NUTS2 -> Comunidad Autónoma, para derivar la cascada territorio.
+const NUTS2_CCAA = {
+  ES11: "Galicia", ES12: "Asturias", ES13: "Cantabria", ES21: "País Vasco",
+  ES22: "Navarra", ES23: "La Rioja", ES24: "Aragón", ES30: "Madrid",
+  ES41: "Castilla y León", ES42: "Castilla-La Mancha", ES43: "Extremadura",
+  ES51: "Cataluña", ES52: "Comunidad Valenciana", ES53: "Illes Balears",
+  ES61: "Andalucía", ES62: "Región de Murcia", ES63: "Ceuta", ES64: "Melilla",
+  ES70: "Canarias",
+};
+
+// Deriva {estatal, ccaa, ciudad} de una ayuda desde su código de región.
+// Ej. "ES511 - Barcelona" -> provincia (Cataluña); "ES41 - ..." -> CCAA; "ES" -> estatal.
+function geoDe(a) {
+  if (a._geo) return a._geo;
+  const code = (((a.regiones || [])[0]) || "").split(" - ")[0].trim();
+  let ccaa = null, estatal = false;
+  if (code === "ES") estatal = true;
+  else if (code.length === 4) ccaa = NUTS2_CCAA[code] || null;
+  else if (code.length === 5) ccaa = NUTS2_CCAA[code.slice(0, 4)] || null;
+  const ciudad = a.ambito === "LOCAL" && a.comunidad ? capitaliza(a.comunidad) : null;
+  a._geo = { estatal, ccaa, ciudad };
+  return a._geo;
+}
+
 // Convierte títulos EN MAYÚSCULAS a estilo frase, más legibles.
 function aSentencia(t) {
   if (!t) return t;
@@ -113,8 +137,22 @@ function rellenaSelect(sel, valores) {
 }
 
 function inicializaFiltros() {
-  rellenaSelect($("f-comunidad"), opcionesUnicas(TODAS.map(territorio)));
+  rellenaSelect($("f-ccaa"), opcionesUnicas(TODAS.map((a) => geoDe(a).ccaa)));
   rellenaSelect($("f-finalidad"), opcionesUnicas(TODAS.map((a) => a.finalidad)));
+}
+
+// Cascada: al elegir comunidad, se rellenan las ciudades de esa comunidad
+// (las que tienen ayudas locales). "Todas" si no hay comunidad elegida.
+function actualizaCiudades() {
+  const ccaa = $("f-ccaa").value;
+  const sel = $("f-ciudad");
+  sel.innerHTML = '<option value="">Todas</option>';
+  if (!ccaa) { sel.disabled = true; return; }
+  const ciudades = opcionesUnicas(
+    TODAS.filter((a) => geoDe(a).ccaa === ccaa && geoDe(a).ciudad).map((a) => geoDe(a).ciudad)
+  );
+  rellenaSelect(sel, ciudades);
+  sel.disabled = ciudades.length === 0;
 }
 
 // --------------------------------------------------------------------------- //
@@ -126,8 +164,9 @@ function tarjeta(a) {
 
   const badges = [];
   if (a.ambito) badges.push(`<span class="badge ambito">${escapa(capitaliza(a.ambito))}</span>`);
-  const terr = territorio(a);
-  if (terr) badges.push(`<span class="badge">${escapa(capitaliza(terr))}</span>`);
+  const g = geoDe(a);
+  const terr = g.ciudad || g.ccaa || (g.estatal ? "España" : null);
+  if (terr) badges.push(`<span class="badge">${escapa(terr)}</span>`);
   if (a.finalidad) badges.push(`<span class="badge">${escapa(a.finalidad)}</span>`);
   const dias = diasRestantes(a.fecha_fin);
   if (dias != null && dias >= 0) {
@@ -164,11 +203,20 @@ function tarjeta(a) {
 
 function aplica() {
   const q = $("busqueda").value.trim().toLowerCase();
-  const com = $("f-comunidad").value;
+  const ccaa = $("f-ccaa").value;
+  const ciudad = $("f-ciudad").value;
   const fin = $("f-finalidad").value;
 
   const filtradas = TODAS.filter((a) => {
-    if (com && territorio(a) !== com) return false;
+    // Cascada territorio: si vives en una comunidad, ves las estatales (valen
+    // para todos) + las de tu comunidad + las locales (acotadas por ciudad).
+    if (ccaa) {
+      const g = geoDe(a);
+      if (!g.estatal) {
+        if (g.ccaa !== ccaa) return false;
+        if (ciudad && g.ciudad && g.ciudad !== ciudad) return false;
+      }
+    }
     if (fin && a.finalidad !== fin) return false;
     // Circunstancias: si hay marcadas, debe casar al menos una.
     if (circSel.size) {
@@ -235,6 +283,7 @@ async function init() {
     TODAS = datos.ayudas || [];
     CIRC_LABELS = datos.circunstancias_catalogo || {};
     inicializaFiltros();
+    actualizaCiudades();
     construyeChips();
     aplica();
     if (datos.generado) {
@@ -250,7 +299,8 @@ async function init() {
 
   // Los desplegables filtran al instante; la búsqueda por texto se ejecuta
   // al pulsar "Buscar" o Enter.
-  $("f-comunidad").addEventListener("change", aplica);
+  $("f-ccaa").addEventListener("change", () => { actualizaCiudades(); aplica(); });
+  $("f-ciudad").addEventListener("change", aplica);
   $("f-finalidad").addEventListener("change", aplica);
   $("buscar").addEventListener("click", aplica);
   $("busqueda").addEventListener("keydown", (e) => { if (e.key === "Enter") aplica(); });
