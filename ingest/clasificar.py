@@ -56,6 +56,9 @@ CIRCUNSTANCIAS = {
     "migracion":         ("Migrante o retornado/a",          ["migrant", "inmigra", "refugiad", "retorno", "asilo"]),
     "rural":             ("Vivo en zona rural",              ["medio rural", "despoblacion", "nucleo rural", "zona rural"]),
     "autonomo":          ("Autónomo/a",                      ["autonomo", "cuenta propia", "emprend", "autoempleo", "cuota cero", "autoocupacion"]),
+    "acogimiento":       ("Acogimiento o tutela",            ["acogimiento", "familia acogedora", "tutela", "guarda y custodia", "menores tutelad"]),
+    "orfandad":          ("Orfandad o viudedad",             ["orfandad", "huerfan", "viudedad", "viuda", "viudo"]),
+    "terrorismo":        ("Víctima de terrorismo",           ["terrorismo", "victimas del terror"]),
 }
 
 # Circunstancias que cuentan como "bienestar familiar" (visibles por defecto).
@@ -64,6 +67,7 @@ FAMILIARES = {
     "discapacidad", "desempleo", "familia_numerosa", "monoparental", "hijos",
     "dependencia", "cuidadores", "mayores", "jovenes", "mujer", "violencia_genero",
     "estudiante", "salud", "vulnerabilidad", "migracion",
+    "acogimiento", "orfandad", "terrorismo",
 }
 
 # Finalidades de BDNS que son de bienestar (relevantes aunque el título no case).

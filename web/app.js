@@ -9,17 +9,18 @@ let incluirOtras = false;    // incluir también las no relevantes (cultura, eve
 
 // --- Perfil de situación del usuario ---
 const perfilSel = new Set();   // claves de situación marcadas (para emparejar)
-const perfilDet = {};          // { clave: { sub:Set, aQuien:Set } } detalle por situación
+const perfilDet = {};          // { clave: { sub:Set } } detalle por situación
+let perfilIngresos = "";       // tramo de renta (se guarda; afinará con "IA lee las bases")
 
-// Agrupación de situaciones en bloques. Las claves coinciden con las
-// circunstancias del catálogo (ingest/clasificar.py).
-const GRUPOS = [
-  ["Tu familia", ["familia_numerosa", "monoparental", "hijos", "dependencia", "cuidadores"]],
-  ["Tu situación personal", ["discapacidad", "salud", "violencia_genero", "migracion", "mujer"]],
-  ["Trabajo y economía", ["desempleo", "autonomo", "vulnerabilidad", "estudiante"]],
-  ["Edad y entorno", ["jovenes", "mayores", "rural"]],
+// Estructura del perfil basada en cómo clasifican las ayudas (lectura de 141 pliegos).
+// La familia se define UNA vez (no se pregunta "a quién" en cada situación).
+const GRUPO_FAMILIA = ["familia_numerosa", "monoparental", "hijos", "cuidadores", "acogimiento"];
+const GRUPO_SITUACIONES = [
+  "discapacidad", "dependencia", "salud", "mujer", "violencia_genero", "desempleo",
+  "autonomo", "estudiante", "jovenes", "mayores", "migracion", "vulnerabilidad",
+  "orfandad", "terrorismo", "rural",
 ];
-// Subopciones (grado/edad/categoría) que se detallan al seleccionar una situación.
+// Subopciones (grado/edad/categoría) con los valores reales vistos en los pliegos.
 const SUBOPC = {
   discapacidad: ["33–64 %", "65 % o más", "Movilidad reducida"],
   dependencia: ["Grado I", "Grado II", "Grado III"],
@@ -29,7 +30,8 @@ const SUBOPC = {
   jovenes: ["16–25", "26–30", "31–35"],
   mayores: ["60–64", "65 o más"],
 };
-const A_QUIEN = ["Yo", "Mi pareja", "Un hijo/a", "Otro familiar a cargo"];
+// Tramos de renta de la unidad familiar (medidos en veces el IPREM, como en los pliegos).
+const INGRESOS = ["Menos de 1× IPREM", "Entre 1 y 1,5× IPREM", "Entre 1,5 y 2× IPREM", "Más de 2× IPREM"];
 
 const $ = (id) => document.getElementById(id);
 
@@ -272,76 +274,97 @@ function aplica() {
 }
 
 // --------------------------------------------------------------------------- //
-// "Tu situación" en bloques, con subopciones y "¿a quién?"
+// "Tu situación" en bloques (familia · economía · situaciones)
 // --------------------------------------------------------------------------- //
-function miniChip(txt, on) {
-  const b = document.createElement("button");
-  b.type = "button"; b.className = "minichip"; b.textContent = txt;
-  b.setAttribute("aria-pressed", on ? "true" : "false");
-  return b;
-}
-
-// Panel de detalle (subopciones + ¿a quién?) para una situación seleccionada.
+// Panel de detalle (solo subopciones: grado, edad, categoría) de una situación.
 function panelDetalle(c) {
-  const det = perfilDet[c] || (perfilDet[c] = { sub: new Set(), aQuien: new Set() });
+  const det = perfilDet[c] || (perfilDet[c] = { sub: new Set() });
+  if (!det.sub) det.sub = new Set();
   const wrap = document.createElement("div");
   wrap.className = "sit-panel"; wrap.dataset.sit = c;
   wrap.innerHTML = `<span class="sit-panel-titulo">${escapa(CIRC_LABELS[c])}</span>`;
-
-  const fila = (etiqueta, opciones, conjunto) => {
-    const f = document.createElement("div"); f.className = "sub-fila";
-    f.innerHTML = `<span class="sub-label">${etiqueta}</span>`;
-    opciones.forEach((o) => {
-      const b = miniChip(o, conjunto.has(o));
-      b.addEventListener("click", () => {
-        conjunto.has(o) ? conjunto.delete(o) : conjunto.add(o);
-        b.setAttribute("aria-pressed", conjunto.has(o) ? "true" : "false");
-      });
-      f.appendChild(b);
+  const f = document.createElement("div"); f.className = "sub-fila";
+  f.innerHTML = '<span class="sub-label">Detalle:</span>';
+  SUBOPC[c].forEach((o) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "minichip"; b.textContent = o;
+    b.setAttribute("aria-pressed", det.sub.has(o) ? "true" : "false");
+    b.addEventListener("click", () => {
+      det.sub.has(o) ? det.sub.delete(o) : det.sub.add(o);
+      b.setAttribute("aria-pressed", det.sub.has(o) ? "true" : "false");
     });
-    wrap.appendChild(f);
-  };
-  if (SUBOPC[c]) fila("Detalle:", SUBOPC[c], det.sub);
-  fila("¿A quién?", A_QUIEN, det.aQuien);
+    f.appendChild(b);
+  });
+  wrap.appendChild(f);
   return wrap;
+}
+
+// Bloque de situaciones seleccionables (familia o situaciones personales).
+function bloqueSituaciones(titulo, claves) {
+  const bloque = document.createElement("div");
+  bloque.className = "bloque";
+  bloque.innerHTML = `<h3>${escapa(titulo)}</h3>`;
+  const chips = document.createElement("div"); chips.className = "chips";
+  const paneles = document.createElement("div"); paneles.className = "grupo-paneles";
+  claves.forEach((c) => {
+    if (!CIRC_LABELS[c]) return;
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.dataset.sit = c;
+    b.textContent = CIRC_LABELS[c];
+    b.setAttribute("aria-pressed", perfilSel.has(c) ? "true" : "false");
+    if (perfilSel.has(c) && SUBOPC[c]) paneles.appendChild(panelDetalle(c));
+    b.addEventListener("click", () => {
+      if (perfilSel.has(c)) {
+        perfilSel.delete(c); delete perfilDet[c];
+        b.setAttribute("aria-pressed", "false");
+        const p = paneles.querySelector(`.sit-panel[data-sit="${c}"]`);
+        if (p) p.remove();
+      } else {
+        perfilSel.add(c);
+        b.setAttribute("aria-pressed", "true");
+        if (SUBOPC[c]) paneles.appendChild(panelDetalle(c));
+      }
+      // No se busca aquí: la búsqueda se lanza con el botón "Buscar".
+    });
+    chips.appendChild(b);
+  });
+  bloque.appendChild(chips); bloque.appendChild(paneles);
+  return bloque;
+}
+
+// Bloque de ingresos (selección única de tramo). Se guarda en el perfil; aún no
+// filtra (las ayudas de BDNS no traen el umbral; llegará con "IA lee las bases").
+function bloqueIngresos() {
+  const bloque = document.createElement("div");
+  bloque.className = "bloque";
+  bloque.innerHTML = `<h3>¿Cuál es vuestra situación económica?</h3>`;
+  const chips = document.createElement("div"); chips.className = "chips";
+  INGRESOS.forEach((opt) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = opt;
+    b.setAttribute("aria-pressed", perfilIngresos === opt ? "true" : "false");
+    b.addEventListener("click", () => {
+      perfilIngresos = perfilIngresos === opt ? "" : opt;
+      chips.querySelectorAll(".chip").forEach((x) =>
+        x.setAttribute("aria-pressed", x.textContent === perfilIngresos ? "true" : "false"));
+    });
+    chips.appendChild(b);
+  });
+  bloque.appendChild(chips);
+  const nota = document.createElement("p");
+  nota.className = "situacion-sub";
+  nota.textContent = "Se guarda en tu perfil; afinará los resultados cuando leamos las bases con detalle.";
+  bloque.appendChild(nota);
+  return bloque;
 }
 
 function construyeBloques() {
   const cont = $("bloques");
   if (!cont) return;
   cont.innerHTML = "";
-  GRUPOS.forEach(([titulo, claves]) => {
-    const bloque = document.createElement("div");
-    bloque.className = "bloque";
-    bloque.innerHTML = `<h3>${escapa(titulo)}</h3>`;
-    const chips = document.createElement("div"); chips.className = "chips";
-    const paneles = document.createElement("div"); paneles.className = "grupo-paneles";
-    claves.forEach((c) => {
-      if (!CIRC_LABELS[c]) return;
-      const b = document.createElement("button");
-      b.type = "button"; b.className = "chip"; b.dataset.sit = c;
-      b.textContent = CIRC_LABELS[c];
-      b.setAttribute("aria-pressed", perfilSel.has(c) ? "true" : "false");
-      if (perfilSel.has(c)) paneles.appendChild(panelDetalle(c));
-      b.addEventListener("click", () => {
-        if (perfilSel.has(c)) {
-          perfilSel.delete(c); delete perfilDet[c];
-          b.setAttribute("aria-pressed", "false");
-          const p = paneles.querySelector(`.sit-panel[data-sit="${c}"]`);
-          if (p) p.remove();
-        } else {
-          perfilSel.add(c);
-          b.setAttribute("aria-pressed", "true");
-          paneles.appendChild(panelDetalle(c));
-        }
-        // No se busca aquí: la búsqueda se lanza con el botón "Buscar".
-      });
-      chips.appendChild(b);
-    });
-    bloque.appendChild(chips);
-    bloque.appendChild(paneles);
-    cont.appendChild(bloque);
-  });
+  cont.appendChild(bloqueSituaciones("¿Quiénes formáis la familia?", GRUPO_FAMILIA));
+  cont.appendChild(bloqueIngresos());
+  cont.appendChild(bloqueSituaciones("¿Alguien está en alguna de estas situaciones?", GRUPO_SITUACIONES));
 }
 
 // --- Guardar / cargar preferencias en el navegador (sin servidor) ---
@@ -350,29 +373,36 @@ function avisoPerfil(m) {
   if (e) { e.textContent = m; setTimeout(() => { e.textContent = ""; }, 2500); }
 }
 function guardaPerfil() {
-  const data = { sel: [...perfilSel], det: {}, incluirOtras };
-  for (const k of perfilSel) {
-    const d = perfilDet[k] || { sub: new Set(), aQuien: new Set() };
-    data.det[k] = { sub: [...d.sub], aQuien: [...d.aQuien] };
-  }
+  const data = {
+    sel: [...perfilSel], det: {}, ingresos: perfilIngresos, incluirOtras,
+    ccaa: $("f-ccaa").value, ciudad: $("f-ciudad").value,
+    tema: $("f-finalidad").value, q: $("busqueda").value,
+  };
+  for (const k of perfilSel) data.det[k] = { sub: [...((perfilDet[k] || {}).sub || [])] };
   try { localStorage.setItem("radar_perfil", JSON.stringify(data)); avisoPerfil("Preferencias guardadas ✓"); }
   catch (_) { avisoPerfil("No se pudieron guardar"); }
 }
 function cargaPerfil() {
+  cargaPerfil.pend = {};
   try {
     const data = JSON.parse(localStorage.getItem("radar_perfil") || "null");
     if (!data) return;
     (data.sel || []).forEach((k) => {
       perfilSel.add(k);
       const d = data.det && data.det[k] ? data.det[k] : {};
-      perfilDet[k] = { sub: new Set(d.sub || []), aQuien: new Set(d.aQuien || []) };
+      perfilDet[k] = { sub: new Set(d.sub || []) };
     });
+    if (data.ingresos) perfilIngresos = data.ingresos;
     if (data.incluirOtras) incluirOtras = true;
+    cargaPerfil.pend = { ccaa: data.ccaa, ciudad: data.ciudad, tema: data.tema, q: data.q };
   } catch (_) { /* preferencias corruptas: se ignoran */ }
 }
 function borraPerfil() {
   perfilSel.clear();
   Object.keys(perfilDet).forEach((k) => delete perfilDet[k]);
+  perfilIngresos = "";
+  $("f-ccaa").value = ""; actualizaCiudades();
+  $("f-finalidad").value = ""; $("busqueda").value = "";
   try { localStorage.removeItem("radar_perfil"); } catch (_) {}
   construyeBloques();
   avisoPerfil("Preferencias borradas");
@@ -388,7 +418,12 @@ async function init() {
     CIRC_LABELS = datos.circunstancias_catalogo || {};
     cargaPerfil();
     inicializaFiltros();
+    const pend = cargaPerfil.pend || {};
+    if (pend.ccaa) $("f-ccaa").value = pend.ccaa;
     actualizaCiudades();
+    if (pend.ciudad) $("f-ciudad").value = pend.ciudad;
+    if (pend.tema) $("f-finalidad").value = pend.tema;
+    if (pend.q) $("busqueda").value = pend.q;
     construyeBloques();
     aplica();
     if (datos.generado) {

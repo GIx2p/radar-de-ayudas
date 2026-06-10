@@ -7308,7 +7308,8 @@
       "bases_estado": "ok",
       "sede_estado": null,
       "circunstancias": [
-        "estudiante"
+        "estudiante",
+        "acogimiento"
       ],
       "relevancia_familiar": true
     },
@@ -12399,7 +12400,8 @@
       "bases_estado": "ok",
       "sede_estado": null,
       "circunstancias": [
-        "estudiante"
+        "estudiante",
+        "acogimiento"
       ],
       "relevancia_familiar": true
     },
@@ -18463,7 +18465,8 @@
       "bases_estado": "dudoso",
       "sede_estado": "dudoso",
       "circunstancias": [
-        "hijos"
+        "hijos",
+        "acogimiento"
       ],
       "relevancia_familiar": true
     },
@@ -37252,8 +37255,10 @@
       "sin_plazo": false,
       "bases_estado": "dudoso",
       "sede_estado": "dudoso",
-      "circunstancias": [],
-      "relevancia_familiar": false
+      "circunstancias": [
+        "terrorismo"
+      ],
+      "relevancia_familiar": true
     },
     {
       "id": "910218",
@@ -59860,7 +59865,9 @@
       "sin_plazo": false,
       "bases_estado": "ok",
       "sede_estado": null,
-      "circunstancias": [],
+      "circunstancias": [
+        "acogimiento"
+      ],
       "relevancia_familiar": true
     },
     {
@@ -64493,7 +64500,9 @@
       "sin_plazo": false,
       "bases_estado": "ok",
       "sede_estado": null,
-      "circunstancias": [],
+      "circunstancias": [
+        "acogimiento"
+      ],
       "relevancia_familiar": true
     },
     {
@@ -65547,7 +65556,8 @@
       "bases_estado": "muerto",
       "sede_estado": null,
       "circunstancias": [
-        "hijos"
+        "hijos",
+        "acogimiento"
       ],
       "relevancia_familiar": true
     },
@@ -67954,7 +67964,8 @@
       "bases_estado": "muerto",
       "sede_estado": null,
       "circunstancias": [
-        "hijos"
+        "hijos",
+        "acogimiento"
       ],
       "relevancia_familiar": true
     },
@@ -68687,7 +68698,8 @@
       "bases_estado": "ok",
       "sede_estado": null,
       "circunstancias": [
-        "hijos"
+        "hijos",
+        "acogimiento"
       ],
       "relevancia_familiar": true
     },
@@ -68732,7 +68744,9 @@
       "sin_plazo": false,
       "bases_estado": "ok",
       "sede_estado": null,
-      "circunstancias": [],
+      "circunstancias": [
+        "acogimiento"
+      ],
       "relevancia_familiar": true
     },
     {
@@ -68776,7 +68790,9 @@
       "sin_plazo": false,
       "bases_estado": "ok",
       "sede_estado": null,
-      "circunstancias": [],
+      "circunstancias": [
+        "acogimiento"
+      ],
       "relevancia_familiar": true
     },
     {
@@ -69456,7 +69472,9 @@
       "sin_plazo": false,
       "bases_estado": "ok",
       "sede_estado": null,
-      "circunstancias": [],
+      "circunstancias": [
+        "acogimiento"
+      ],
       "relevancia_familiar": true
     },
     {
@@ -72312,7 +72330,8 @@
       "bases_estado": "ok",
       "sede_estado": "muerto",
       "circunstancias": [
-        "hijos"
+        "hijos",
+        "acogimiento"
       ],
       "relevancia_familiar": true
     },
@@ -72823,7 +72842,8 @@
       "bases_estado": "dudoso",
       "sede_estado": null,
       "circunstancias": [
-        "hijos"
+        "hijos",
+        "acogimiento"
       ],
       "relevancia_familiar": true
     },
@@ -87367,7 +87387,9 @@
       "sin_plazo": true,
       "bases_estado": "ok",
       "sede_estado": null,
-      "circunstancias": [],
+      "circunstancias": [
+        "acogimiento"
+      ],
       "relevancia_familiar": true
     },
     {
@@ -94038,8 +94060,10 @@
       "sin_plazo": true,
       "bases_estado": "ok",
       "sede_estado": null,
-      "circunstancias": [],
-      "relevancia_familiar": false
+      "circunstancias": [
+        "terrorismo"
+      ],
+      "relevancia_familiar": true
     },
     {
       "id": "873002",
@@ -108341,8 +108365,10 @@
       "sin_plazo": true,
       "bases_estado": "ok",
       "sede_estado": null,
-      "circunstancias": [],
-      "relevancia_familiar": false
+      "circunstancias": [
+        "terrorismo"
+      ],
+      "relevancia_familiar": true
     },
     {
       "id": "844416",
@@ -110866,6 +110892,9 @@
     "vulnerabilidad": "Pocos ingresos / vulnerabilidad",
     "migracion": "Migrante o retornado/a",
     "rural": "Vivo en zona rural",
-    "autonomo": "Autónomo/a"
+    "autonomo": "Autónomo/a",
+    "acogimiento": "Acogimiento o tutela",
+    "orfandad": "Orfandad o viudedad",
+    "terrorismo": "Víctima de terrorismo"
   }
 }
