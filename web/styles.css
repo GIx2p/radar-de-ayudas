@@ -143,6 +143,10 @@ a { color: var(--acento-osc); }
 .minichip:hover { border-color: var(--acento); }
 .minichip[aria-pressed="true"] { background: var(--acento); color: #fff; border-color: var(--acento); }
 .acciones-perfil { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-top: 1rem; }
+.perfil-label { font-size: .85rem; color: var(--tinta-suave); display: inline-flex; align-items: center; gap: .35rem; }
+#perfil-select, #perfil-nombre { padding: .4rem .55rem; border: 1px solid var(--borde); border-radius: 8px; font-size: .88rem; background: #fff; color: var(--tinta); }
+#perfil-nombre { min-width: 11rem; }
+#perfil-select:focus, #perfil-nombre:focus { outline: 2px solid var(--acento); border-color: var(--acento); }
 .btn-secundario { font-size: .85rem; padding: .42rem .85rem; border: 1px solid var(--borde); background: #fff; border-radius: 8px; cursor: pointer; color: var(--tinta); }
 .btn-secundario:hover { border-color: var(--acento); color: var(--acento-osc); }
 .perfil-aviso { font-size: .82rem; color: var(--acento-osc); font-weight: 600; }

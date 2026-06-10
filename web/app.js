@@ -367,45 +367,73 @@ function construyeBloques() {
   cont.appendChild(bloqueSituaciones("¿Alguien está en alguna de estas situaciones?", GRUPO_SITUACIONES));
 }
 
-// --- Guardar / cargar preferencias en el navegador (sin servidor) ---
+// --- Varios perfiles guardados en el navegador (sin servidor) ---
+const PERF_KEY = "radar_perfiles";
 function avisoPerfil(m) {
   const e = $("perfil-aviso");
-  if (e) { e.textContent = m; setTimeout(() => { e.textContent = ""; }, 2500); }
+  if (e) { e.textContent = m; setTimeout(() => { e.textContent = ""; }, 3000); }
 }
-function guardaPerfil() {
-  const data = {
-    sel: [...perfilSel], det: {}, ingresos: perfilIngresos, incluirOtras,
+function leePerfiles() {
+  try { return JSON.parse(localStorage.getItem(PERF_KEY)) || { activo: "", perfiles: {} }; }
+  catch (_) { return { activo: "", perfiles: {} }; }
+}
+function escribePerfiles(o) { try { localStorage.setItem(PERF_KEY, JSON.stringify(o)); } catch (_) {} }
+
+// Vuelca el estado actual de la UI a un objeto perfil.
+function estadoActual() {
+  const det = {};
+  for (const k of perfilSel) det[k] = { sub: [...((perfilDet[k] || {}).sub || [])] };
+  return {
+    sel: [...perfilSel], det, ingresos: perfilIngresos, incluirOtras,
     ccaa: $("f-ccaa").value, ciudad: $("f-ciudad").value,
     tema: $("f-finalidad").value, q: $("busqueda").value,
   };
-  for (const k of perfilSel) data.det[k] = { sub: [...((perfilDet[k] || {}).sub || [])] };
-  try { localStorage.setItem("radar_perfil", JSON.stringify(data)); avisoPerfil("Preferencias guardadas ✓"); }
-  catch (_) { avisoPerfil("No se pudieron guardar"); }
 }
-function cargaPerfil() {
-  cargaPerfil.pend = {};
-  try {
-    const data = JSON.parse(localStorage.getItem("radar_perfil") || "null");
-    if (!data) return;
-    (data.sel || []).forEach((k) => {
-      perfilSel.add(k);
-      const d = data.det && data.det[k] ? data.det[k] : {};
-      perfilDet[k] = { sub: new Set(d.sub || []) };
-    });
-    if (data.ingresos) perfilIngresos = data.ingresos;
-    if (data.incluirOtras) incluirOtras = true;
-    cargaPerfil.pend = { ccaa: data.ccaa, ciudad: data.ciudad, tema: data.tema, q: data.q };
-  } catch (_) { /* preferencias corruptas: se ignoran */ }
-}
-function borraPerfil() {
+// Carga un objeto perfil en la UI (selecciones, ingresos, ubicación, tema).
+function aplicaEstado(p) {
+  p = p || {};
   perfilSel.clear();
   Object.keys(perfilDet).forEach((k) => delete perfilDet[k]);
-  perfilIngresos = "";
-  $("f-ccaa").value = ""; actualizaCiudades();
-  $("f-finalidad").value = ""; $("busqueda").value = "";
-  try { localStorage.removeItem("radar_perfil"); } catch (_) {}
+  (p.sel || []).forEach((k) => {
+    perfilSel.add(k);
+    perfilDet[k] = { sub: new Set((p.det && p.det[k] ? p.det[k].sub : []) || []) };
+  });
+  perfilIngresos = p.ingresos || "";
+  incluirOtras = !!p.incluirOtras;
+  const chk = $("incluir-otras"); if (chk) chk.checked = incluirOtras;
+  $("f-ccaa").value = p.ccaa || ""; actualizaCiudades();
+  $("f-ciudad").value = p.ciudad || "";
+  $("f-finalidad").value = p.tema || "";
+  $("busqueda").value = p.q || "";
   construyeBloques();
-  avisoPerfil("Preferencias borradas");
+}
+function refrescaSelector() {
+  const o = leePerfiles(); const sel = $("perfil-select"); if (!sel) return;
+  sel.innerHTML = '<option value="">— nuevo perfil —</option>';
+  Object.keys(o.perfiles).forEach((n) => {
+    const op = document.createElement("option"); op.value = n; op.textContent = n; sel.appendChild(op);
+  });
+  sel.value = o.activo || "";
+}
+function guardaPerfil() {
+  const nombre = ($("perfil-nombre").value || $("perfil-select").value || "Mi perfil").trim();
+  const o = leePerfiles();
+  o.perfiles[nombre] = estadoActual(); o.activo = nombre;
+  escribePerfiles(o); refrescaSelector();
+  avisoPerfil(`Guardado como "${nombre}" ✓`);
+}
+function borraPerfil() {
+  const o = leePerfiles(); const n = $("perfil-select").value;
+  if (n && o.perfiles[n]) { delete o.perfiles[n]; o.activo = ""; escribePerfiles(o); }
+  aplicaEstado({}); $("perfil-nombre").value = ""; refrescaSelector();
+  avisoPerfil(n ? `Perfil "${n}" borrado` : "Perfil limpiado");
+}
+function cambiaPerfil() {
+  const n = $("perfil-select").value; const o = leePerfiles();
+  if (n && o.perfiles[n]) { aplicaEstado(o.perfiles[n]); $("perfil-nombre").value = n; o.activo = n; }
+  else { aplicaEstado({}); $("perfil-nombre").value = ""; o.activo = ""; }
+  escribePerfiles(o);
+  aplica();   // al cambiar de perfil sí mostramos sus resultados
 }
 
 // --------------------------------------------------------------------------- //
@@ -416,15 +444,16 @@ async function init() {
     const datos = await cargar();
     TODAS = datos.ayudas || [];
     CIRC_LABELS = datos.circunstancias_catalogo || {};
-    cargaPerfil();
     inicializaFiltros();
-    const pend = cargaPerfil.pend || {};
-    if (pend.ccaa) $("f-ccaa").value = pend.ccaa;
-    actualizaCiudades();
-    if (pend.ciudad) $("f-ciudad").value = pend.ciudad;
-    if (pend.tema) $("f-finalidad").value = pend.tema;
-    if (pend.q) $("busqueda").value = pend.q;
-    construyeBloques();
+    refrescaSelector();
+    const _o = leePerfiles();
+    if (_o.activo && _o.perfiles[_o.activo]) {
+      aplicaEstado(_o.perfiles[_o.activo]);
+      $("perfil-nombre").value = _o.activo;
+    } else {
+      actualizaCiudades();
+      construyeBloques();
+    }
     aplica();
     if (datos.generado) {
       const f = new Date(datos.generado);
@@ -449,6 +478,7 @@ async function init() {
     chkOtras.checked = incluirOtras;
     chkOtras.addEventListener("change", () => { incluirOtras = chkOtras.checked; });
   }
+  const selP = $("perfil-select"); if (selP) selP.addEventListener("change", cambiaPerfil);
   const bG = $("guardar-perfil"); if (bG) bG.addEventListener("click", guardaPerfil);
   const bB = $("borrar-perfil"); if (bB) bB.addEventListener("click", borraPerfil);
 }

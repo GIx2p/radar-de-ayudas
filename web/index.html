@@ -21,7 +21,11 @@
       <p class="situacion-sub">Marca lo que te aplique. Al seleccionar, puedes detallar el grado, la edad y a quién afecta. Si no marcas nada, verás todas las ayudas de bienestar para personas y familias.</p>
       <div id="bloques" class="bloques"></div>
       <div class="acciones-perfil">
-        <button id="guardar-perfil" class="btn-secundario" type="button">💾 Guardar mis preferencias</button>
+        <label class="perfil-label">Perfil:
+          <select id="perfil-select"><option value="">— nuevo perfil —</option></select>
+        </label>
+        <input id="perfil-nombre" type="text" placeholder="Nombre (p. ej. Mi familia)" autocomplete="off" />
+        <button id="guardar-perfil" class="btn-secundario" type="button">💾 Guardar</button>
         <button id="borrar-perfil" class="btn-secundario" type="button">Borrar</button>
         <span id="perfil-aviso" class="perfil-aviso" role="status" aria-live="polite"></span>
       </div>
