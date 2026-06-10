@@ -43,7 +43,7 @@ CIRCUNSTANCIAS = {
     "desempleo":         ("En paro / busco empleo",          ["desemple", "parad", "demandante de empleo", "insercion laboral", "busqueda de empleo", "larga duracion", "mayores de 45", "mayores de 52", "recualificac"]),
     "familia_numerosa":  ("Familia numerosa",                ["familia numerosa", "familias numerosas"]),
     "monoparental":      ("Familia monoparental",            ["monoparental", "monomarental"]),
-    "hijos":             ("Tengo hijos (o voy a tenerlos)",  ["natalidad", "nacimiento", "hijo", "menores", "infancia", "conciliacion", "guarderia", "escuela infantil", "cheque bebe", "ayuda al nacimiento", "0-3", "primer ciclo"]),
+    "hijos":             ("Tengo hijos (o voy a tenerlos)",  ["natalidad", "nacimiento", "hijos", "menores de edad", "menores a cargo", "hijos menores", "infancia", "conciliacion de la vida", "guarderia", "escuela infantil", "cheque bebe", "ayuda al nacimiento", "primer ciclo de educacion infantil"]),
     "dependencia":       ("Dependencia (mía o de un familiar)", ["dependencia", "gran dependiente", "autonomia personal", "cuidados de larga"]),
     "cuidadores":        ("Persona cuidadora",               ["cuidador", "persona cuidadora"]),
     "mayores":           ("Persona mayor",                   ["mayores", "tercera edad", "pensionist", "envejecimiento", "personas de edad"]),

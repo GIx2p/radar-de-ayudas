@@ -8451,9 +8451,7 @@
       "sin_plazo": false,
       "bases_estado": "ok",
       "sede_estado": null,
-      "circunstancias": [
-        "hijos"
-      ],
+      "circunstancias": [],
       "relevancia_familiar": true
     },
     {
@@ -8906,10 +8904,8 @@
       "sin_plazo": false,
       "bases_estado": "muerto",
       "sede_estado": "ok",
-      "circunstancias": [
-        "hijos"
-      ],
-      "relevancia_familiar": true
+      "circunstancias": [],
+      "relevancia_familiar": false
     },
     {
       "id": "907704",
@@ -36077,10 +36073,8 @@
       "sin_plazo": false,
       "bases_estado": "muerto",
       "sede_estado": null,
-      "circunstancias": [
-        "hijos"
-      ],
-      "relevancia_familiar": true
+      "circunstancias": [],
+      "relevancia_familiar": false
     },
     {
       "id": "881055",
@@ -63394,9 +63388,7 @@
       "sin_plazo": false,
       "bases_estado": "ok",
       "sede_estado": null,
-      "circunstancias": [
-        "hijos"
-      ],
+      "circunstancias": [],
       "relevancia_familiar": true
     },
     {
@@ -68698,7 +68690,6 @@
       "bases_estado": "ok",
       "sede_estado": null,
       "circunstancias": [
-        "hijos",
         "acogimiento"
       ],
       "relevancia_familiar": true
@@ -82252,7 +82243,6 @@
       "bases_estado": "ok",
       "sede_estado": null,
       "circunstancias": [
-        "hijos",
         "estudiante",
         "vulnerabilidad"
       ],
@@ -86879,10 +86869,8 @@
       "sin_plazo": true,
       "bases_estado": "ok",
       "sede_estado": null,
-      "circunstancias": [
-        "hijos"
-      ],
-      "relevancia_familiar": true
+      "circunstancias": [],
+      "relevancia_familiar": false
     },
     {
       "id": "890889",
@@ -89627,7 +89615,6 @@
       "sede_estado": null,
       "circunstancias": [
         "desempleo",
-        "hijos",
         "jovenes"
       ],
       "relevancia_familiar": true
@@ -93975,8 +93962,7 @@
       "bases_estado": "ok",
       "sede_estado": null,
       "circunstancias": [
-        "desempleo",
-        "hijos"
+        "desempleo"
       ],
       "relevancia_familiar": true
     },
@@ -103949,7 +103935,6 @@
       "bases_estado": "ok",
       "sede_estado": null,
       "circunstancias": [
-        "hijos",
         "estudiante"
       ],
       "relevancia_familiar": true
@@ -104033,8 +104018,7 @@
       "bases_estado": "dudoso",
       "sede_estado": "dudoso",
       "circunstancias": [
-        "discapacidad",
-        "hijos"
+        "discapacidad"
       ],
       "relevancia_familiar": true
     },
