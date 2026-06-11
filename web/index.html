@@ -36,9 +36,9 @@
       </div>
     </section>
 
-    <section class="situacion" aria-label="Tu situación">
-      <h2>¿Cuál es tu situación?</h2>
-      <p class="situacion-sub">Marca lo que te aplique. Al seleccionar, puedes detallar el grado, la edad y a quién afecta. Si no marcas nada, verás todas las ayudas de bienestar para personas y familias.</p>
+    <section class="situacion" aria-label="Vuestra familia">
+      <h2>Vuestra familia</h2>
+      <p class="situacion-sub">Cuéntanos cómo es vuestro hogar y quiénes lo formáis. Todo es opcional y se queda solo en tu navegador. Si no rellenas nada, verás todas las ayudas de bienestar para personas y familias.</p>
       <div id="bloques" class="bloques"></div>
       <div class="acciones-perfil">
         <label class="perfil-label">Perfil:
@@ -49,18 +49,21 @@
         <button id="borrar-perfil" class="btn-secundario" type="button">Borrar</button>
         <span id="perfil-aviso" class="perfil-aviso" role="status" aria-live="polite"></span>
       </div>
+      <div class="cta-buscar">
+        <button id="buscar" class="btn-buscar btn-grande" type="button">🔍 Ver nuestras ayudas</button>
+      </div>
     </section>
 
-    <section class="controles" aria-label="Búsqueda y filtros">
+    <section class="controles" aria-label="Refinar resultados">
       <div class="campo campo-busqueda">
-        <label for="busqueda">Buscar</label>
-        <input type="search" id="busqueda" placeholder="Palabra clave: beca, vivienda, dependencia, educación…" autocomplete="off" />
+        <label for="busqueda">Refinar por palabra clave</label>
+        <input type="search" id="busqueda" placeholder="beca, vivienda, dependencia, comedor…" autocomplete="off" />
       </div>
       <div class="campo">
         <label for="f-finalidad">Tema</label>
         <select id="f-finalidad"><option value="">Todos</option></select>
       </div>
-      <button id="buscar" class="btn-buscar" type="button">Buscar</button>
+      <button id="refinar" class="btn-buscar" type="button">Aplicar</button>
     </section>
 
     <div class="barra-resumen">

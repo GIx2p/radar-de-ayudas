@@ -7,31 +7,64 @@ let TODAS = [];
 let CIRC_LABELS = {};
 let incluirOtras = false;    // incluir también las no relevantes (cultura, eventos…)
 
-// --- Perfil de situación del usuario ---
-const perfilSel = new Set();   // claves de situación marcadas (para emparejar)
-const perfilDet = {};          // { clave: { sub:Set } } detalle por situación
-let perfilIngresos = "";       // tramo de renta (se guarda; afinará con "IA lee las bases")
+// --- Perfil del hogar (modelo acordado: hogar + una ficha por miembro) ---
+// La familia se define UNA vez; la edad sale del año de nacimiento de cada miembro.
+function hogarVacio() {
+  return { tipo: "", numerosaCat: "", acogimiento: false, numMiembros: 1, ingresos: "", empleados: 0 };
+}
+function miembroVacio() { return { anio: "", sits: {} }; }  // sits: { clave: [subopciones] }
+let HOGAR = hogarVacio();
+let MIEMBROS = [miembroVacio()];
 
-// Estructura del perfil basada en cómo clasifican las ayudas (lectura de 141 pliegos).
-// La familia se define UNA vez (no se pregunta "a quién" en cada situación).
-const GRUPO_FAMILIA = ["familia_numerosa", "monoparental", "hijos", "cuidadores", "acogimiento"];
-const GRUPO_SITUACIONES = [
-  "discapacidad", "dependencia", "salud", "mujer", "violencia_genero", "desempleo",
-  "autonomo", "estudiante", "jovenes", "mayores", "migracion", "vulnerabilidad",
-  "orfandad", "terrorismo", "rural",
+// Situaciones por miembro (etiquetas claras, valores reales de los pliegos).
+const SITS_MIEMBRO = [
+  ["discapacidad", "Discapacidad"],
+  ["dependencia", "Dependencia"],
+  ["salud", "Enfermedad grave"],
+  ["estudiante", "Estudiante"],
+  ["desempleo", "En paro"],
+  ["autonomo", "Autónomo/a"],
+  ["mujer", "Mujer"],
+  ["violencia_genero", "Víctima de violencia de género"],
+  ["migracion", "Migrante o retornado/a"],
+  ["orfandad", "Orfandad o viudedad"],
+  ["terrorismo", "Víctima de terrorismo"],
 ];
-// Subopciones (grado/edad/categoría) con los valores reales vistos en los pliegos.
 const SUBOPC = {
   discapacidad: ["33–64 %", "65 % o más", "Movilidad reducida"],
   dependencia: ["Grado I", "Grado II", "Grado III"],
-  familia_numerosa: ["General", "Especial"],
-  desempleo: ["Larga duración", "Mayor de 45", "Mayor de 52"],
-  hijos: ["0–3 años", "3–6", "6–16", "16–25"],
-  jovenes: ["16–25", "26–30", "31–35"],
-  mayores: ["60–64", "65 o más"],
+  desempleo: ["Larga duración"],
 };
-// Tramos de renta de la unidad familiar (medidos en veces el IPREM, como en los pliegos).
+// Tramos de renta de la unidad familiar (en veces el IPREM, como en los pliegos).
 const INGRESOS = ["Menos de 1× IPREM", "Entre 1 y 1,5× IPREM", "Entre 1,5 y 2× IPREM", "Más de 2× IPREM"];
+
+function edadDe(anio) {
+  const y = parseInt(anio, 10);
+  if (!y || y < 1900 || y > new Date().getFullYear()) return null;
+  return new Date().getFullYear() - y;
+}
+
+// Claves de circunstancia que el perfil implica (para el primer filtro, generoso).
+// Mezcla lo declarado (situaciones por miembro, tipo de familia) con lo derivado
+// (edades -> hijos/joven/mayor; ingresos bajos -> vulnerabilidad).
+function clavesPerfil() {
+  const s = new Set();
+  if (HOGAR.tipo === "numerosa") s.add("familia_numerosa");
+  if (HOGAR.tipo === "monoparental") s.add("monoparental");
+  if (HOGAR.acogimiento) s.add("acogimiento");
+  if (HOGAR.ingresos === INGRESOS[0]) s.add("vulnerabilidad");
+  const edades = MIEMBROS.map((m) => edadDe(m.anio)).filter((e) => e != null);
+  MIEMBROS.forEach((m) => {
+    Object.keys(m.sits).forEach((k) => s.add(k));
+    const e = edadDe(m.anio);
+    if (e == null) return;
+    if (e < 18) s.add("hijos");
+    else if (e <= 25 && edades.some((o) => o >= e + 16)) s.add("hijos");  // joven con padre/madre plausible
+    if (e >= 16 && e <= 35) s.add("jovenes");
+    if (e >= 60) s.add("mayores");
+  });
+  return s;
+}
 
 const $ = (id) => document.getElementById(id);
 
@@ -273,6 +306,7 @@ function aplica() {
   const ccaa = $("f-ccaa").value;
   const ayto = norm($("f-ayuntamiento").value);
   const fin = $("f-finalidad").value;
+  const claves = clavesPerfil();
 
   const filtradas = TODAS.filter((a) => {
     // Cascada territorio: si das tu comunidad ves las estatales + las de tu
@@ -285,14 +319,14 @@ function aplica() {
       }
     }
     if (fin && a.finalidad !== fin) return false;
-    // Circunstancias: si hay marcadas, debe casar al menos una.
-    if (perfilSel.size) {
+    // Circunstancias del hogar (declaradas + derivadas): debe casar al menos una.
+    if (claves.size) {
       const cs = a.circunstancias || [];
       let casa = false;
-      for (const c of perfilSel) if (cs.includes(c)) { casa = true; break; }
+      for (const c of claves) if (cs.includes(c)) { casa = true; break; }
       if (!casa) return false;
     } else if (!incluirOtras && a.relevancia_familiar === false) {
-      // Sin circunstancias marcadas: por defecto solo bienestar familiar.
+      // Sin perfil rellenado: por defecto solo bienestar familiar.
       return false;
     }
     if (q) {
@@ -308,7 +342,7 @@ function aplica() {
   filtradas.forEach((a) => ul.appendChild(tarjeta(a)));
   const n = filtradas.length;
   let cola;
-  if (perfilSel.size) cola = n === 1 ? " que puede corresponderte" : " que pueden corresponderte";
+  if (claves.size) cola = n === 1 ? " que puede corresponderos" : " que pueden corresponderos";
   else if (!incluirOtras) cola = " para personas y familias";
   else cola = " abiertas";
   $("resumen").textContent = `${n} ayuda${n === 1 ? "" : "s"}` + cola;
@@ -316,97 +350,154 @@ function aplica() {
 }
 
 // --------------------------------------------------------------------------- //
-// "Tu situación" en bloques (familia · economía · situaciones)
+// "Vuestra familia": bloque de hogar + una ficha por miembro
 // --------------------------------------------------------------------------- //
-// Panel de detalle (solo subopciones: grado, edad, categoría) de una situación.
-function panelDetalle(c) {
-  const det = perfilDet[c] || (perfilDet[c] = { sub: new Set() });
-  if (!det.sub) det.sub = new Set();
-  const wrap = document.createElement("div");
-  wrap.className = "sit-panel"; wrap.dataset.sit = c;
-  wrap.innerHTML = `<span class="sit-panel-titulo">${escapa(CIRC_LABELS[c])}</span>`;
+function chipBtn(txt, on, onClick) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "chip"; b.textContent = txt;
+  b.setAttribute("aria-pressed", on ? "true" : "false");
+  b.addEventListener("click", onClick);
+  return b;
+}
+function miniBtn(txt, on, onClick) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "minichip"; b.textContent = txt;
+  b.setAttribute("aria-pressed", on ? "true" : "false");
+  b.addEventListener("click", onClick);
+  return b;
+}
+function filaCampo(etiqueta) {
   const f = document.createElement("div"); f.className = "sub-fila";
-  f.innerHTML = '<span class="sub-label">Detalle:</span>';
-  SUBOPC[c].forEach((o) => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "minichip"; b.textContent = o;
-    b.setAttribute("aria-pressed", det.sub.has(o) ? "true" : "false");
-    b.addEventListener("click", () => {
-      det.sub.has(o) ? det.sub.delete(o) : det.sub.add(o);
-      b.setAttribute("aria-pressed", det.sub.has(o) ? "true" : "false");
-    });
-    f.appendChild(b);
-  });
-  wrap.appendChild(f);
-  return wrap;
+  const s = document.createElement("span"); s.className = "sub-label"; s.textContent = etiqueta;
+  f.appendChild(s);
+  return f;
 }
 
-// Bloque de situaciones seleccionables (familia o situaciones personales).
-function bloqueSituaciones(titulo, claves) {
+// Bloque 1: el hogar (tipo de familia, acogimiento, nº de miembros, ingresos, empleados).
+function bloqueHogar() {
   const bloque = document.createElement("div");
   bloque.className = "bloque";
-  bloque.innerHTML = `<h3>${escapa(titulo)}</h3>`;
-  const chips = document.createElement("div"); chips.className = "chips";
-  const paneles = document.createElement("div"); paneles.className = "grupo-paneles";
-  claves.forEach((c) => {
-    if (!CIRC_LABELS[c]) return;
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "chip"; b.dataset.sit = c;
-    b.textContent = CIRC_LABELS[c];
-    b.setAttribute("aria-pressed", perfilSel.has(c) ? "true" : "false");
-    if (perfilSel.has(c) && SUBOPC[c]) paneles.appendChild(panelDetalle(c));
-    b.addEventListener("click", () => {
-      if (perfilSel.has(c)) {
-        perfilSel.delete(c); delete perfilDet[c];
-        b.setAttribute("aria-pressed", "false");
-        const p = paneles.querySelector(`.sit-panel[data-sit="${c}"]`);
-        if (p) p.remove();
-      } else {
-        perfilSel.add(c);
-        b.setAttribute("aria-pressed", "true");
-        if (SUBOPC[c]) paneles.appendChild(panelDetalle(c));
-      }
-      // No se busca aquí: la búsqueda se lanza con el botón "Buscar".
-    });
-    chips.appendChild(b);
-  });
-  bloque.appendChild(chips); bloque.appendChild(paneles);
-  return bloque;
-}
+  bloque.innerHTML = "<h3>Vuestro hogar</h3>";
 
-// Bloque de ingresos (selección única de tramo). Se guarda en el perfil; aún no
-// filtra (las ayudas de BDNS no traen el umbral; llegará con "IA lee las bases").
-function bloqueIngresos() {
-  const bloque = document.createElement("div");
-  bloque.className = "bloque";
-  bloque.innerHTML = `<h3>¿Cuál es vuestra situación económica?</h3>`;
-  const chips = document.createElement("div"); chips.className = "chips";
+  // Tipo de familia (selección única)
+  const fTipo = filaCampo("Tipo de familia:");
+  [["", "Normal"], ["numerosa", "Numerosa"], ["monoparental", "Monoparental"]].forEach(([val, txt]) => {
+    fTipo.appendChild(miniBtn(txt, HOGAR.tipo === val, () => {
+      HOGAR.tipo = val; if (val !== "numerosa") HOGAR.numerosaCat = "";
+      construyeBloques();
+    }));
+  });
+  bloque.appendChild(fTipo);
+  if (HOGAR.tipo === "numerosa") {
+    const fCat = filaCampo("Categoría:");
+    ["General", "Especial"].forEach((c) => {
+      fCat.appendChild(miniBtn(c, HOGAR.numerosaCat === c, () => {
+        HOGAR.numerosaCat = HOGAR.numerosaCat === c ? "" : c; construyeBloques();
+      }));
+    });
+    bloque.appendChild(fCat);
+  }
+
+  // Acogimiento / tutela
+  const fAco = filaCampo("¿Acogimiento o tutela de un menor?");
+  fAco.appendChild(miniBtn("Sí", HOGAR.acogimiento, () => { HOGAR.acogimiento = !HOGAR.acogimiento; construyeBloques(); }));
+  bloque.appendChild(fAco);
+
+  // Nº de miembros -> genera las fichas
+  const fNum = filaCampo("¿Cuántos sois en casa?");
+  const inp = document.createElement("input");
+  inp.type = "number"; inp.min = "1"; inp.max = "15"; inp.value = HOGAR.numMiembros; inp.className = "num-input";
+  inp.addEventListener("change", () => {
+    const n = Math.max(1, Math.min(15, parseInt(inp.value, 10) || 1));
+    HOGAR.numMiembros = n;
+    while (MIEMBROS.length < n) MIEMBROS.push(miembroVacio());
+    MIEMBROS.length = n;
+    construyeBloques();
+  });
+  fNum.appendChild(inp);
+  bloque.appendChild(fNum);
+
+  // Ingresos de la unidad familiar (selección única)
+  const fIng = filaCampo("Ingresos del hogar:");
   INGRESOS.forEach((opt) => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "chip"; b.textContent = opt;
-    b.setAttribute("aria-pressed", perfilIngresos === opt ? "true" : "false");
-    b.addEventListener("click", () => {
-      perfilIngresos = perfilIngresos === opt ? "" : opt;
-      chips.querySelectorAll(".chip").forEach((x) =>
-        x.setAttribute("aria-pressed", x.textContent === perfilIngresos ? "true" : "false"));
-    });
-    chips.appendChild(b);
+    fIng.appendChild(miniBtn(opt, HOGAR.ingresos === opt, () => {
+      HOGAR.ingresos = HOGAR.ingresos === opt ? "" : opt; construyeBloques();
+    }));
   });
-  bloque.appendChild(chips);
-  const nota = document.createElement("p");
-  nota.className = "situacion-sub";
-  nota.textContent = "Se guarda en tu perfil; afinará los resultados cuando leamos las bases con detalle.";
-  bloque.appendChild(nota);
+  bloque.appendChild(fIng);
+
+  // Empleados del hogar (se captura; sus fichas llegarán tras leer ayudas reales)
+  const fEmp = filaCampo("¿Tenéis empleados del hogar?");
+  fEmp.appendChild(miniBtn("Sí", HOGAR.empleados > 0, () => {
+    HOGAR.empleados = HOGAR.empleados > 0 ? 0 : 1; construyeBloques();
+  }));
+  if (HOGAR.empleados > 0) {
+    const ie = document.createElement("input");
+    ie.type = "number"; ie.min = "1"; ie.max = "9"; ie.value = HOGAR.empleados; ie.className = "num-input";
+    ie.addEventListener("change", () => { HOGAR.empleados = Math.max(1, Math.min(9, parseInt(ie.value, 10) || 1)); });
+    const lbl = document.createElement("span"); lbl.className = "sub-label"; lbl.textContent = "¿Cuántos?";
+    fEmp.appendChild(lbl); fEmp.appendChild(ie);
+  }
+  bloque.appendChild(fEmp);
   return bloque;
+}
+
+// Ficha de un miembro: año de nacimiento + sus situaciones (con detalle).
+function fichaMiembro(i) {
+  const m = MIEMBROS[i];
+  const ficha = document.createElement("div");
+  ficha.className = "sit-panel ficha-miembro"; ficha.dataset.miembro = i;
+
+  const cab = document.createElement("div"); cab.className = "sub-fila";
+  const tit = document.createElement("span"); tit.className = "sit-panel-titulo"; tit.textContent = `Miembro ${i + 1}`;
+  const lblA = document.createElement("span"); lblA.className = "sub-label"; lblA.textContent = "Año de nacimiento:";
+  const inp = document.createElement("input");
+  inp.type = "number"; inp.min = "1900"; inp.max = String(new Date().getFullYear());
+  inp.placeholder = "p. ej. 1980"; inp.value = m.anio || ""; inp.className = "num-input anio";
+  inp.addEventListener("change", () => { m.anio = inp.value; });
+  cab.appendChild(tit); cab.appendChild(lblA); cab.appendChild(inp);
+  ficha.appendChild(cab);
+
+  const fS = filaCampo("Situaciones:");
+  SITS_MIEMBRO.forEach(([clave, txt]) => {
+    fS.appendChild(miniBtn(txt, clave in m.sits, () => {
+      if (clave in m.sits) delete m.sits[clave];
+      else m.sits[clave] = [];
+      construyeBloques();
+    }));
+  });
+  ficha.appendChild(fS);
+
+  // Subopciones de las situaciones marcadas que las tienen
+  Object.keys(m.sits).forEach((clave) => {
+    if (!SUBOPC[clave]) return;
+    const f = filaCampo(`Detalle ${ (SITS_MIEMBRO.find(([k]) => k === clave) || ["", clave])[1].toLowerCase() }:`);
+    SUBOPC[clave].forEach((o) => {
+      const on = m.sits[clave].includes(o);
+      f.appendChild(miniBtn(o, on, () => {
+        const arr = m.sits[clave];
+        const idx = arr.indexOf(o);
+        if (idx >= 0) arr.splice(idx, 1); else arr.push(o);
+        construyeBloques();
+      }));
+    });
+    ficha.appendChild(f);
+  });
+  return ficha;
 }
 
 function construyeBloques() {
   const cont = $("bloques");
   if (!cont) return;
   cont.innerHTML = "";
-  cont.appendChild(bloqueSituaciones("¿Quiénes formáis la familia?", GRUPO_FAMILIA));
-  cont.appendChild(bloqueIngresos());
-  cont.appendChild(bloqueSituaciones("¿Alguien está en alguna de estas situaciones?", GRUPO_SITUACIONES));
+  cont.appendChild(bloqueHogar());
+  const bM = document.createElement("div");
+  bM.className = "bloque";
+  bM.innerHTML = "<h3>Los miembros</h3>";
+  const cuerpo = document.createElement("div"); cuerpo.className = "grupo-paneles";
+  for (let i = 0; i < HOGAR.numMiembros; i++) cuerpo.appendChild(fichaMiembro(i));
+  bM.appendChild(cuerpo);
+  cont.appendChild(bM);
 }
 
 // --- Varios perfiles guardados en el navegador (sin servidor) ---
@@ -421,26 +512,24 @@ function leePerfiles() {
 }
 function escribePerfiles(o) { try { localStorage.setItem(PERF_KEY, JSON.stringify(o)); } catch (_) {} }
 
-// Vuelca el estado actual de la UI a un objeto perfil.
+// Vuelca el estado actual de la UI a un objeto perfil (un perfil = un hogar).
 function estadoActual() {
-  const det = {};
-  for (const k of perfilSel) det[k] = { sub: [...((perfilDet[k] || {}).sub || [])] };
   return {
-    sel: [...perfilSel], det, ingresos: perfilIngresos, incluirOtras,
+    hogar: JSON.parse(JSON.stringify(HOGAR)),
+    miembros: JSON.parse(JSON.stringify(MIEMBROS)),
+    incluirOtras,
     ccaa: $("f-ccaa").value, provincia: $("f-provincia").value, ayto: $("f-ayuntamiento").value,
     tema: $("f-finalidad").value, q: $("busqueda").value,
   };
 }
-// Carga un objeto perfil en la UI (selecciones, ingresos, ubicación, tema).
+// Carga un objeto perfil en la UI (hogar, miembros, ubicación, tema).
 function aplicaEstado(p) {
   p = p || {};
-  perfilSel.clear();
-  Object.keys(perfilDet).forEach((k) => delete perfilDet[k]);
-  (p.sel || []).forEach((k) => {
-    perfilSel.add(k);
-    perfilDet[k] = { sub: new Set((p.det && p.det[k] ? p.det[k].sub : []) || []) };
-  });
-  perfilIngresos = p.ingresos || "";
+  HOGAR = Object.assign(hogarVacio(), p.hogar || {});
+  MIEMBROS = Array.isArray(p.miembros) && p.miembros.length
+    ? p.miembros.map((m) => ({ anio: m.anio || "", sits: m.sits || {} }))
+    : [miembroVacio()];
+  HOGAR.numMiembros = MIEMBROS.length;
   incluirOtras = !!p.incluirOtras;
   const chk = $("incluir-otras"); if (chk) chk.checked = incluirOtras;
   $("f-ccaa").value = p.ccaa || ""; actualizaProvincias();
@@ -518,6 +607,7 @@ async function init() {
   $("f-ccaa").addEventListener("change", actualizaProvincias);
   $("f-provincia").addEventListener("change", actualizaMunicipios);
   $("buscar").addEventListener("click", aplica);
+  const bR = $("refinar"); if (bR) bR.addEventListener("click", aplica);
   $("busqueda").addEventListener("keydown", (e) => { if (e.key === "Enter") aplica(); });
   const chkOtras = $("incluir-otras");
   if (chkOtras) {
