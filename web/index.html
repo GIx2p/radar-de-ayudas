@@ -16,6 +16,26 @@
   </header>
 
   <main class="contenedor">
+    <section class="ubicacion" aria-label="Dónde vives">
+      <h2>¿Dónde vivís?</h2>
+      <p class="situacion-sub">Elige tu comunidad, provincia y ayuntamiento. Verás las ayudas de tu municipio y también las de tu provincia, comunidad y las estatales. Cuanto más concretes, más a tu medida.</p>
+      <div class="ubicacion-campos">
+        <div class="campo">
+          <label for="f-ccaa">Comunidad autónoma</label>
+          <select id="f-ccaa"><option value="">Toda España</option></select>
+        </div>
+        <div class="campo">
+          <label for="f-provincia">Provincia</label>
+          <select id="f-provincia"><option value="">Todas</option></select>
+        </div>
+        <div class="campo">
+          <label for="f-ayuntamiento">Ayuntamiento</label>
+          <input id="f-ayuntamiento" list="lista-municipios" placeholder="Escribe tu municipio…" autocomplete="off" />
+          <datalist id="lista-municipios"></datalist>
+        </div>
+      </div>
+    </section>
+
     <section class="situacion" aria-label="Tu situación">
       <h2>¿Cuál es tu situación?</h2>
       <p class="situacion-sub">Marca lo que te aplique. Al seleccionar, puedes detallar el grado, la edad y a quién afecta. Si no marcas nada, verás todas las ayudas de bienestar para personas y familias.</p>
@@ -35,14 +55,6 @@
       <div class="campo campo-busqueda">
         <label for="busqueda">Buscar</label>
         <input type="search" id="busqueda" placeholder="Palabra clave: beca, vivienda, dependencia, educación…" autocomplete="off" />
-      </div>
-      <div class="campo">
-        <label for="f-ccaa">Comunidad autónoma</label>
-        <select id="f-ccaa"><option value="">Toda España</option></select>
-      </div>
-      <div class="campo">
-        <label for="f-ciudad">Ciudad</label>
-        <select id="f-ciudad"><option value="">Todas</option></select>
       </div>
       <div class="campo">
         <label for="f-finalidad">Tema</label>

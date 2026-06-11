@@ -48,6 +48,13 @@ async function cargar() {
   throw new Error("No se pudo cargar el catálogo de ayudas.");
 }
 
+async function cargarGeo() {
+  for (const ruta of ["geo.json", "../web/geo.json"]) {
+    try { const r = await fetch(ruta); if (r.ok) return await r.json(); } catch (_) { /* siguiente */ }
+  }
+  return { provincias: [], municipios: {} };
+}
+
 // --------------------------------------------------------------------------- //
 // Utilidades de formato
 // --------------------------------------------------------------------------- //
@@ -80,17 +87,45 @@ const NUTS2_CCAA = {
   ES70: "Canarias",
 };
 
-// Deriva {estatal, ccaa, ciudad} de una ayuda desde su código de región.
-// Ej. "ES511 - Barcelona" -> provincia (Cataluña); "ES41 - ..." -> CCAA; "ES" -> estatal.
+// Datos oficiales de municipios (INE), cargados desde geo.json.
+let GEO = { provincias: [], municipios: {} };
+let MUNI_CCAA = {};   // nombre municipio normalizado -> Set de comunidades donde existe
+// Normaliza para comparar nombres (minúsculas, sin acentos).
+function norm(s) { return (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim(); }
+
+// Índice municipio -> comunidad(es), a partir de los datos del INE.
+function construyeMuniIndex() {
+  MUNI_CCAA = {};
+  const provCCAA = {}; GEO.provincias.forEach((p) => { provCCAA[p.id] = p.ccaa; });
+  for (const [pid, lista] of Object.entries(GEO.municipios)) {
+    const ccaa = provCCAA[pid];
+    lista.forEach((m) => { const k = norm(m); (MUNI_CCAA[k] = MUNI_CCAA[k] || new Set()).add(ccaa); });
+  }
+}
+
+// Deriva la geografía de una ayuda. Clave: una ayuda LOCAL nunca es estatal;
+// su comunidad se deduce de su municipio (su campo "regiones" no es fiable).
 function geoDe(a) {
   if (a._geo) return a._geo;
-  const code = (((a.regiones || [])[0]) || "").split(" - ")[0].trim();
-  let ccaa = null, estatal = false;
-  if (code === "ES") estatal = true;
-  else if (code.length === 4) ccaa = NUTS2_CCAA[code] || null;
-  else if (code.length === 5) ccaa = NUTS2_CCAA[code.slice(0, 4)] || null;
-  const ciudad = a.ambito === "LOCAL" && a.comunidad ? capitaliza(a.comunidad) : null;
-  a._geo = { estatal, ccaa, ciudad };
+  const partes = (((a.regiones || [])[0]) || "").split(" - ");
+  const code = (partes[0] || "").trim();
+  let regCCAA = null, estatalReg = false, provincia = null;
+  if (code === "ES") estatalReg = true;
+  else if (code.length === 4) regCCAA = NUTS2_CCAA[code] || null;
+  else if (code.length === 5) { regCCAA = NUTS2_CCAA[code.slice(0, 4)] || null; provincia = (partes[1] || "").trim() || null; }
+
+  const esEstado = a.ambito === "ESTADO";
+  const esLocal = a.ambito === "LOCAL";
+  const ciudad = esLocal && a.comunidad ? capitaliza(a.comunidad) : null;
+  const ciudadN = norm(a.comunidad);
+
+  let ccaaSet;
+  if (esEstado) ccaaSet = new Set();
+  else if (esLocal) { ccaaSet = new Set(MUNI_CCAA[ciudadN] || []); if (regCCAA) ccaaSet.add(regCCAA); }
+  else ccaaSet = new Set(regCCAA ? [regCCAA] : []);
+
+  const estatal = esEstado || (estatalReg && !esLocal);   // LOCAL nunca es estatal
+  a._geo = { estatal, ccaaSet, ccaa: [...ccaaSet][0] || null, provincia, ciudad, ciudadN };
   return a._geo;
 }
 
@@ -161,23 +196,30 @@ function rellenaSelect(sel, valores) {
   }
 }
 
+function addOptions(sel, items) {
+  items.forEach((v) => { const o = document.createElement("option"); o.value = v; o.textContent = v; sel.appendChild(o); });
+}
 function inicializaFiltros() {
-  rellenaSelect($("f-ccaa"), opcionesUnicas(TODAS.map((a) => geoDe(a).ccaa)));
+  const ccaas = [...new Set(GEO.provincias.map((p) => p.ccaa))].sort((a, b) => a.localeCompare(b, "es"));
+  addOptions($("f-ccaa"), ccaas);
   rellenaSelect($("f-finalidad"), opcionesUnicas(TODAS.map((a) => a.finalidad)));
 }
 
-// Cascada: al elegir comunidad, se rellenan las ciudades de esa comunidad
-// (las que tienen ayudas locales). "Todas" si no hay comunidad elegida.
-function actualizaCiudades() {
+// Cascada Comunidad -> Provincia -> Ayuntamiento (datos oficiales del INE).
+function actualizaProvincias() {
   const ccaa = $("f-ccaa").value;
-  const sel = $("f-ciudad");
+  const sel = $("f-provincia");
   sel.innerHTML = '<option value="">Todas</option>';
+  $("f-ayuntamiento").value = ""; actualizaMunicipios();
   if (!ccaa) { sel.disabled = true; return; }
-  const ciudades = opcionesUnicas(
-    TODAS.filter((a) => geoDe(a).ccaa === ccaa && geoDe(a).ciudad).map((a) => geoDe(a).ciudad)
-  );
-  rellenaSelect(sel, ciudades);
-  sel.disabled = ciudades.length === 0;
+  addOptions(sel, GEO.provincias.filter((p) => p.ccaa === ccaa).map((p) => p.nombre).sort((a, b) => a.localeCompare(b, "es")));
+  sel.disabled = false;
+}
+function actualizaMunicipios() {
+  const dl = $("lista-municipios"); if (dl) dl.innerHTML = "";
+  const prov = GEO.provincias.find((p) => p.nombre === $("f-provincia").value);
+  if (!prov || !dl) return;
+  (GEO.municipios[prov.id] || []).forEach((m) => { const o = document.createElement("option"); o.value = m; dl.appendChild(o); });
 }
 
 // --------------------------------------------------------------------------- //
@@ -229,17 +271,17 @@ function tarjeta(a) {
 function aplica() {
   const q = $("busqueda").value.trim().toLowerCase();
   const ccaa = $("f-ccaa").value;
-  const ciudad = $("f-ciudad").value;
+  const ayto = norm($("f-ayuntamiento").value);
   const fin = $("f-finalidad").value;
 
   const filtradas = TODAS.filter((a) => {
-    // Cascada territorio: si vives en una comunidad, ves las estatales (valen
-    // para todos) + las de tu comunidad + las locales (acotadas por ciudad).
+    // Cascada territorio: si das tu comunidad ves las estatales + las de tu
+    // comunidad. Si das tu ayuntamiento, de lo LOCAL solo el tuyo (nunca otro).
     if (ccaa) {
       const g = geoDe(a);
       if (!g.estatal) {
-        if (g.ccaa !== ccaa) return false;
-        if (ciudad && g.ciudad && g.ciudad !== ciudad) return false;
+        if (!g.ccaaSet.has(ccaa)) return false;
+        if (ayto && g.ciudad && g.ciudadN !== ayto) return false;
       }
     }
     if (fin && a.finalidad !== fin) return false;
@@ -385,7 +427,7 @@ function estadoActual() {
   for (const k of perfilSel) det[k] = { sub: [...((perfilDet[k] || {}).sub || [])] };
   return {
     sel: [...perfilSel], det, ingresos: perfilIngresos, incluirOtras,
-    ccaa: $("f-ccaa").value, ciudad: $("f-ciudad").value,
+    ccaa: $("f-ccaa").value, provincia: $("f-provincia").value, ayto: $("f-ayuntamiento").value,
     tema: $("f-finalidad").value, q: $("busqueda").value,
   };
 }
@@ -401,8 +443,9 @@ function aplicaEstado(p) {
   perfilIngresos = p.ingresos || "";
   incluirOtras = !!p.incluirOtras;
   const chk = $("incluir-otras"); if (chk) chk.checked = incluirOtras;
-  $("f-ccaa").value = p.ccaa || ""; actualizaCiudades();
-  $("f-ciudad").value = p.ciudad || "";
+  $("f-ccaa").value = p.ccaa || ""; actualizaProvincias();
+  $("f-provincia").value = p.provincia || ""; actualizaMunicipios();
+  $("f-ayuntamiento").value = p.ayto || "";
   $("f-finalidad").value = p.tema || "";
   $("busqueda").value = p.q || "";
   construyeBloques();
@@ -444,6 +487,8 @@ async function init() {
     const datos = await cargar();
     TODAS = datos.ayudas || [];
     CIRC_LABELS = datos.circunstancias_catalogo || {};
+    GEO = await cargarGeo();
+    construyeMuniIndex();
     inicializaFiltros();
     refrescaSelector();
     const _o = leePerfiles();
@@ -451,7 +496,7 @@ async function init() {
       aplicaEstado(_o.perfiles[_o.activo]);
       $("perfil-nombre").value = _o.activo;
     } else {
-      actualizaCiudades();
+      actualizaProvincias();
       construyeBloques();
     }
     aplica();
@@ -470,7 +515,8 @@ async function init() {
   // al pulsar "Buscar" o Enter.
   // La búsqueda NO es automática: solo se ejecuta al pulsar "Buscar" o Enter.
   // Los demás controles solo actualizan su estado (sin relanzar la búsqueda).
-  $("f-ccaa").addEventListener("change", actualizaCiudades);
+  $("f-ccaa").addEventListener("change", actualizaProvincias);
+  $("f-provincia").addEventListener("change", actualizaMunicipios);
   $("buscar").addEventListener("click", aplica);
   $("busqueda").addEventListener("keydown", (e) => { if (e.key === "Enter") aplica(); });
   const chkOtras = $("incluir-otras");
