@@ -54,9 +54,14 @@
       </div>
     </section>
 
+    <div class="barra-resumen">
+      <p id="resumen" class="resumen" role="status" aria-live="polite">Cargando ayudas…</p>
+      <label class="incluir-otras"><input type="checkbox" id="incluir-otras" /> Incluir también cultura, eventos y otras</label>
+    </div>
+
     <section class="controles" aria-label="Refinar resultados">
       <div class="campo campo-busqueda">
-        <label for="busqueda">Refinar por palabra clave</label>
+        <label for="busqueda">Refinar resultados por palabra clave</label>
         <input type="search" id="busqueda" placeholder="beca, vivienda, dependencia, comedor…" autocomplete="off" />
       </div>
       <div class="campo">
@@ -65,11 +70,6 @@
       </div>
       <button id="refinar" class="btn-buscar" type="button">Aplicar</button>
     </section>
-
-    <div class="barra-resumen">
-      <p id="resumen" class="resumen" role="status" aria-live="polite">Cargando ayudas…</p>
-      <label class="incluir-otras"><input type="checkbox" id="incluir-otras" /> Incluir también cultura, eventos y otras</label>
-    </div>
 
     <ul id="resultados" class="resultados" aria-label="Listado de ayudas"></ul>
 

@@ -134,6 +134,37 @@ function construyeMuniIndex() {
     const ccaa = provCCAA[pid];
     lista.forEach((m) => { const k = norm(m); (MUNI_CCAA[k] = MUNI_CCAA[k] || new Set()).add(ccaa); });
   }
+  construyeAliasGeo();
+}
+
+// Alias territoriales (nombres de CCAA, variantes cooficiales y provincias) para
+// localizar organismos por su nombre ("UNIVERSIDAD DE ALICANTE" -> C. Valenciana).
+let GEO_ALIAS = [];   // [textoNormalizado, ccaa] ordenado de más largo a más corto
+function construyeAliasGeo() {
+  const pares = [];
+  const ccaas = [...new Set(GEO.provincias.map((p) => p.ccaa))];
+  ccaas.forEach((c) => pares.push([norm(c), c]));
+  // Variantes cooficiales / habituales que no salen de los datos del INE
+  const extra = {
+    "catalunya": "Cataluña", "euskadi": "País Vasco", "comunitat valenciana": "Comunidad Valenciana",
+    "comunidad de madrid": "Madrid", "comunidad foral de navarra": "Navarra", "nafarroa": "Navarra",
+    "principado de asturias": "Asturias", "galiza": "Galicia", "balears": "Illes Balears",
+  };
+  Object.entries(extra).forEach(([k, v]) => pares.push([k, v]));
+  GEO.provincias.forEach((p) => {
+    p.nombre.split("/").forEach((variante) => {
+      const v = norm(variante);
+      if (v.length >= 4) pares.push([v, p.ccaa]);   // evita alias demasiado cortos
+    });
+  });
+  GEO_ALIAS = pares.sort((a, b) => b[0].length - a[0].length);
+}
+// Devuelve la CCAA que el nombre de un organismo deja entrever, o null.
+function ccaaPorNombre(nombreOrganismo) {
+  const t = norm(nombreOrganismo);
+  if (!t) return null;
+  for (const [alias, ccaa] of GEO_ALIAS) if (t.includes(alias)) return ccaa;
+  return null;
 }
 
 // Deriva la geografía de una ayuda. Clave: una ayuda LOCAL nunca es estatal;
@@ -152,12 +183,28 @@ function geoDe(a) {
   const ciudad = esLocal && a.comunidad ? capitaliza(a.comunidad) : null;
   const ciudadN = norm(a.comunidad);
 
-  let ccaaSet;
-  if (esEstado) ccaaSet = new Set();
-  else if (esLocal) { ccaaSet = new Set(MUNI_CCAA[ciudadN] || []); if (regCCAA) ccaaSet.add(regCCAA); }
-  else ccaaSet = new Set(regCCAA ? [regCCAA] : []);
+  let ccaaSet, estatal;
+  if (esEstado) {
+    ccaaSet = new Set(); estatal = true;
+  } else if (esLocal) {
+    // Una ayuda local NUNCA es estatal: su comunidad sale de su municipio (INE).
+    ccaaSet = new Set(MUNI_CCAA[ciudadN] || []); if (regCCAA) ccaaSet.add(regCCAA);
+    estatal = false;
+  } else if (a.ambito === "AUTONOMICA") {
+    // Una autonómica NUNCA es estatal: su comunidad es su propio nivel2
+    // (su campo "regiones" a veces dice "ES - ESPAÑA" y no es fiable).
+    const porNombre = ccaaPorNombre(a.comunidad);
+    ccaaSet = new Set([porNombre || regCCAA].filter(Boolean));
+    estatal = false;
+  } else {
+    // OTROS (universidades, fundaciones...): localiza el organismo por su nombre;
+    // solo cuenta como estatal si es genuinamente nacional (no localizable).
+    const porNombre = ccaaPorNombre(a.comunidad) || ccaaPorNombre(a.organo);
+    if (porNombre) { ccaaSet = new Set([porNombre]); estatal = false; }
+    else if (regCCAA) { ccaaSet = new Set([regCCAA]); estatal = false; }
+    else { ccaaSet = new Set(); estatal = estatalReg; }
+  }
 
-  const estatal = esEstado || (estatalReg && !esLocal);   // LOCAL nunca es estatal
   a._geo = { estatal, ccaaSet, ccaa: [...ccaaSet][0] || null, provincia, ciudad, ciudadN };
   return a._geo;
 }
