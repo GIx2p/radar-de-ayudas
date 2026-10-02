@@ -7,6 +7,12 @@ on:
       - "web/**"
       - "data/**"
       - ".github/workflows/pages.yml"
+  # El commit que hace la actualización automática NO dispara el "push" de arriba
+  # (GitHub no encadena workflows lanzados con GITHUB_TOKEN). Por eso se publica
+  # también cuando termina la actualización del catálogo.
+  workflow_run:
+    workflows: ["Actualizar catálogo (mensual)"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -21,6 +27,8 @@ concurrency:
 
 jobs:
   build:
+    # Tras una actualización del catálogo, solo se publica si esta terminó bien.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Descargar repositorio
