@@ -26,7 +26,7 @@ encontrar fácilmente las ayudas a las que pueden optar.
 3. **Web** (`web/`): un sitio estático que carga ese JSON y ofrece búsqueda y filtros.
 4. **Actualización automática**: una tarea programada refresca el catálogo periódicamente.
 
-Ver decisiones de diseño en [`docs/decisiones.md`](docs/decisiones.md).
+La documentación de trabajo del proyecto se lleva fuera de este repositorio.
 
 ## Privacidad y separación
 
