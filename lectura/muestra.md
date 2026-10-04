@@ -36,7 +36,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | M17 | Subsidio por desempleo | SEPE | ☐ |
 | M18 | Prestación por nacimiento y cuidado de menor | Seguridad Social | ☐ |
 | M19 | Prestación económica para cuidados en el entorno familiar (dependencia) | Ley 39/2006 e IMSERSO | ☐ |
-| M20 ★ | Plan VEO (ayuda visual para menores de hasta 16 años) | BOE, Real Decreto 902/2025 | ☑ |
+| M20 ★ | Plan VEO (ayuda visual para menores de hasta 16 años) — **cerrada, modelo de ficha** | BOE, Real Decreto 902/2025 | ☑ |
 
 ## C. Beneficios fiscales — 6
 
