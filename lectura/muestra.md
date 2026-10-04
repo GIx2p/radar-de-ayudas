@@ -4,6 +4,8 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 
 **Revisión humana:** las 10 marcadas con ★ se revisan comparando la ficha con su fuente oficial (¿cada condición dice lo que dice la fuente? ¿falta alguna?).
 
+**Cómo se trabaja (acordado el 2026-10-04):** ficha a ficha. Cada ficha se itera hasta que la revisión no encuentra errores; cada error se convierte en una regla de lectura (`METODO.md`, sección 7) antes de pasar a la siguiente. Orden: M20 primero, después el resto de las ★ y luego las demás.
+
 **Estado:** ☐ pendiente · ☑ ficha hecha (en `fichas/`).
 
 ## A. Subvenciones (BDNS) — 12
@@ -93,9 +95,12 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 
 ## Cómo es cada ficha (`fichas/Mxx.md`)
 
-1. **Fuente leída:** enlace oficial y fecha de lectura.
-2. **Qué es:** una o dos frases.
+Se escribe con las reglas de lectura de `METODO.md`, sección 7.
+
+1. **Fuente leída:** enlace oficial, fecha de lectura y versión de la ficha.
+2. **Qué es:** una o dos frases, con el vocabulario de la norma.
 3. **Quién puede pedirla:** texto literal de la fuente.
-4. **Condiciones encontradas:** una por línea, cada una con la cita o el apartado de donde sale. Sin una lista previa: se anota lo que aparece.
-5. **Importe, plazo y cómo se pide.**
-6. **Observaciones:** dudas, ambigüedades y lo que no queda claro en la fuente.
+4. **Requisitos de la norma:** una condición por fila, con todos los artículos de donde sale. Las interpretaciones, marcadas.
+5. **Importe, plazo y cómo se pide:** incluye lo que cubre y lo que no, el plazo de ejecución, el presupuesto con su reparto por ejercicios, las compatibilidades y el régimen legal.
+6. **Observaciones:** dudas, ambigüedades y lo que la norma no aclara.
+7. **Análisis para el Radar:** filtro preliminar y segundo filtro, presentados como diseño nuestro.
