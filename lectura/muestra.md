@@ -53,7 +53,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 
 | # | Ayuda | Dónde se lee | Estado |
 | --- | --- | --- | --- |
-| M27 ★ | Reducción de jornada por guarda legal | Estatuto de los Trabajadores (BOE) | ☑ |
+| M27 ★ | Reducción de jornada por guarda legal — **cerrada** | Estatuto de los Trabajadores (BOE) | ☑ |
 | M28 ★ | Permiso parental | Estatuto de los Trabajadores (BOE) | ☑ |
 | M29 | Excedencia por cuidado de hijos | Estatuto de los Trabajadores (BOE) | ☐ |
 
