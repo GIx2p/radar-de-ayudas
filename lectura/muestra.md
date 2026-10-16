@@ -62,7 +62,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | # | Ayuda | Dónde se lee | Estado |
 | --- | --- | --- | --- |
 | M30 ★ | Bono social eléctrico — **cerrada** | Ministerio para la Transición Ecológica | ☑ |
-| M31 ★ | Tarjeta Solidaria de TUSSAM (Sevilla) | TUSSAM | ☑ |
+| M31 ★ | Tarjeta Solidaria de TUSSAM (Sevilla) — **cerrada** | TUSSAM | ☑ |
 | M32 | Ampliación de los tramos del canon del agua para familias de más de tres miembros (Cataluña) | Catálogo de trámites de la Generalitat | ☐ |
 
 ## F. Autonómicas, de los catálogos de trámites — 14
