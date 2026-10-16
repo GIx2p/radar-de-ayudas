@@ -47,7 +47,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | M23 | Deducción por gastos educativos (Madrid) | Agencia Tributaria | ☐ |
 | M24 ★ | Deducción por nacimiento o adopción (Cataluña) — **cerrada** | Agencia Tributaria | ☑ |
 | M25 ★ | Deducción por alquiler de la vivienda habitual para menores de 35 años (Galicia) — **cerrada** | Agencia Tributaria | ☑ |
-| M26 ★ | Deducción por descendientes (Bizkaia, régimen foral) | Hacienda de Bizkaia | ☑ |
+| M26 ★ | Deducción por descendientes (Bizkaia, régimen foral) — **cerrada** | Hacienda de Bizkaia | ☑ |
 
 ## D. Derechos laborales — 3
 
