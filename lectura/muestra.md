@@ -88,7 +88,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 
 | # | Ayuda | Municipio | Dónde se lee | Estado |
 | --- | --- | --- | --- | --- |
-| M47 ★ | Bonificación del IBI por familia numerosa | Madrid | Ayuntamiento de Madrid | ☑ |
+| M47 ★ | Bonificación del IBI por familia numerosa — **cerrada** | Madrid | Ayuntamiento de Madrid | ☑ |
 | M48 | Ayudas Económicas Familiares | Sevilla | Ayuntamiento de Sevilla | ☐ |
 | M49 | Prestaciones Económicas Individualizadas | València | Sede del Ayuntamiento | ☐ |
 | M50 | Precios de las escoles bressol con tarifación social | Barcelona | Ayuntamiento de Barcelona | ☐ |
