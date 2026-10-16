@@ -81,7 +81,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | M42 | Tarxeta Benvida (nacimientos) | Galicia | Sede de la Xunta (comprobar que sigue vigente) | ☐ |
 | M43 | Ayudas económicas a familias numerosas | Castilla-La Mancha | Catálogo de la Junta, SIIJ | ☐ |
 | M44 | Ayudas de emergencia social | Castilla-La Mancha | Catálogo de la Junta, S609 | ☐ |
-| M45 ★ | Subvención por contratar a una persona empleada de hogar | Madrid | Sede de la Comunidad de Madrid | ☑ |
+| M45 ★ | Subvención por contratar a una persona empleada de hogar — **cerrada** | Madrid | Sede de la Comunidad de Madrid | ☑ |
 | M46 | Valoración de atención temprana | Madrid | Sede de la Comunidad de Madrid | ☐ |
 
 ## G. Municipales — 4
