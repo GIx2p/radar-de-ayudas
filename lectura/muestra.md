@@ -13,7 +13,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | # | Ayuda | Administración | Dónde se lee | Estado |
 | --- | --- | --- | --- | --- |
 | M01 | Becas generales del Ministerio de Educación (curso 2026-2027) — **cerrada** | Estado | BOE (convocatoria) | ☑ |
-| M02 | Ayudas para alumnado con necesidad específica de apoyo educativo (curso 2026-2027) | Estado | BOE (convocatoria) | ☐ |
+| M02 | Ayudas para alumnado con necesidad específica de apoyo educativo (curso 2026-2027) — en revisión | Estado | BOE (convocatoria) | ☑ |
 | M03 | Prestación social de carácter económico (convocatoria del Departamento de Derechos Sociales) | Cataluña | BDNS 923337 | ☐ |
 | M04 | Bono alquiler joven | Canarias | BDNS 928857 | ☐ |
 | M05 | Subvenciones para la conciliación de la vida laboral y familiar | Illes Balears | BDNS 916105 | ☐ |
