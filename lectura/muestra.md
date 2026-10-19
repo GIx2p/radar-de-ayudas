@@ -4,7 +4,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 
 **Revisión humana:** las 10 marcadas con ★ se revisan comparando la ficha con su fuente oficial (¿cada condición dice lo que dice la fuente? ¿falta alguna?).
 
-**Cómo se trabaja (acordado el 2026-10-04):** ficha a ficha. Cada ficha se itera hasta que la revisión no encuentra errores; cada error se convierte en una regla de lectura (`METODO.md`, sección 7) antes de pasar a la siguiente. Orden: M20 primero, después el resto de las ★ y luego las demás.
+**Cómo se trabaja (acordado el 2026-10-04):** ficha a ficha. Cada ficha se itera hasta cerrarla, sin reabrir las cerradas; cada error se convierte en una regla de lectura (`METODO.md`, sección 7) antes de pasar a la siguiente. Orden: M20 primero, después el resto de las ★ y luego las demás.
 
 **Estado:** ☐ pendiente · ☑ ficha hecha (en `fichas/`).
 
