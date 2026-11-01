@@ -16,7 +16,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | M02 | Ayudas para alumnado con necesidad específica de apoyo educativo (curso 2026-2027) — **cerrada** | Estado | BOE (convocatoria) | ☑ |
 | M03 | Prestación social de carácter económico de atención social a las personas con discapacidad (convocatoria del Departamento de Derechos Sociales) — **cerrada** | Cataluña | BDNS 923337 | ☑ |
 | M04 | Bono alquiler joven — **cerrada** | Canarias | BDNS 928857 | ☑ |
-| M05 | Subvenciones para la conciliación de la vida laboral y familiar — en revisión | Illes Balears | BDNS 916105 | ☑ |
+| M05 | Subvenciones para la conciliación de la vida laboral y familiar — **cerrada** | Illes Balears | BDNS 916105 | ☑ |
 | M06 | Ayudas de la Consejería de Presidencia, Reto Demográfico e Igualdad | Asturias | BDNS 894443 | ☐ |
 | M07 | Ayudas económicas (orden de 18 de agosto de 2026) | Galicia | BDNS 926485 | ☐ |
 | M08 | Ayudas de pago único anual para el fomento de la natalidad | O Corgo (pueblo, Lugo) | BDNS 930746 | ☐ |
