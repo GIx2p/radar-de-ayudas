@@ -18,7 +18,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | M04 | Bono alquiler joven — **cerrada** | Canarias | BDNS 928857 | ☑ |
 | M05 | Subvenciones para la conciliación de la vida laboral y familiar — **cerrada** | Illes Balears | BDNS 916105 | ☑ |
 | M06 | Ayudas de la Consejería de Presidencia, Reto Demográfico e Igualdad (fomento de la natalidad y la adopción) — **cerrada** | Asturias | BDNS 894443 | ☑ |
-| M07 | Ayudas económicas (orden de 18 de agosto de 2026) | Galicia | BDNS 926485 | ☐ |
+| M07 | Ayudas económicas (orden de 18 de agosto de 2026: Bono Concilia Familia) — en revisión | Galicia | BDNS 926485 | ☑ |
 | M08 | Ayudas de pago único anual para el fomento de la natalidad | O Corgo (pueblo, Lugo) | BDNS 930746 | ☐ |
 | M09 | Ayudas de mínimos vitales 2026 | Plasencia (ciudad media) | BDNS 912865 | ☐ |
 | M10 | Ayudas a personas mayores empadronadas | Majadahonda | BDNS 925409 | ☐ |
