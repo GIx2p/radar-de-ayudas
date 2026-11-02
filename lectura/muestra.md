@@ -21,7 +21,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | M07 | Ayudas económicas (orden de 18 de agosto de 2026: Bono Concilia Familia) — **cerrada** | Galicia | BDNS 926485 | ☑ |
 | M08 | Ayudas de pago único anual para el fomento de la natalidad — **cerrada** | O Corgo (pueblo, Lugo) | BDNS 930746 | ☑ |
 | M09 | Ayudas de mínimos vitales 2026 — **cerrada** | Plasencia (ciudad media) | BDNS 912865 | ☑ |
-| M10 | Ayudas a personas mayores empadronadas | Majadahonda | BDNS 925409 | ☐ |
+| M10 | Ayudas a personas mayores empadronadas (tratamientos podológicos) — en revisión | Majadahonda | BDNS 925409 | ☑ |
 | M11 | Subvenciones del Plan Corresponsables (curso 2025-2026) | València | BDNS 889008 | ☐ |
 | M12 | Prestaciones económicas de la Diputación | Diputación de Burgos | BDNS 876986 | ☐ |
 

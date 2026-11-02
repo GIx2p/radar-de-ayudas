@@ -13,6 +13,8 @@ va en la ficha, va en una línea de "Observaciones" o no cambia nada para la fam
 import re
 import sys
 
+sys.stdout.reconfigure(encoding='utf-8')
+
 
 def norm(s):
     s = re.sub(r'[\x00-\x08\x0b-\x1f]', '', s.replace(' ', ' '))
