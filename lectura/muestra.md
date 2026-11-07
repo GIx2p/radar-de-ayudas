@@ -22,7 +22,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | M08 | Ayudas de pago único anual para el fomento de la natalidad — **cerrada** | O Corgo (pueblo, Lugo) | BDNS 930746 | ☑ |
 | M09 | Ayudas de mínimos vitales 2026 — **cerrada** | Plasencia (ciudad media) | BDNS 912865 | ☑ |
 | M10 | Ayudas a personas mayores empadronadas (tratamientos podológicos) — **cerrada** | Majadahonda | BDNS 925409 | ☑ |
-| M11 | Subvenciones del Plan Corresponsables (curso 2025-2026) | València | BDNS 889008 | ☐ |
+| M11 | Subvenciones del Plan Corresponsables (curso 2025-2026) — **apartada** (2026-11-02): la piden los centros educativos públicos y las asociaciones (AMPAS, AFAS), no la familia; se guarda como ejemplo de ruido | València | BDNS 889008 | ☐ |
 | M12 | Prestaciones económicas de la Diputación (urgencia social y deuda hipotecaria) — **cerrada** | Diputación de Burgos | BDNS 876986 | ☑ |
 
 ## B. Prestaciones estatales — 8
