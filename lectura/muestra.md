@@ -29,7 +29,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 
 | # | Ayuda | Dónde se lee | Estado |
 | --- | --- | --- | --- |
-| M13 | Ingreso Mínimo Vital | Seguridad Social y Ley 19/2021 | ☐ |
+| M13 | Ingreso Mínimo Vital — en revisión | Seguridad Social y Ley 19/2021 | ☑ |
 | M14 | Complemento de ayuda para la infancia | Seguridad Social y Ley 19/2021 | ☐ |
 | M15 | Asignación por hijo o menor a cargo con discapacidad | Seguridad Social | ☐ |
 | M16 | Prestación por nacimiento o adopción en familias numerosas, monoparentales o con madre o padre con discapacidad (pago único) | Seguridad Social | ☐ |
