@@ -1,4 +1,4 @@
-# H5 · Muestra de lectura (50 ayudas)
+# H5 · Muestra de lectura (38 ayudas)
 
 Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección 7). Se eligió el 2026-10-04 con criterio, no al azar: al azar, la BDNS devolvía sobre todo cosas que no son ayudas para familias (certámenes, transferencias entre organismos, premios). Ese ruido es en sí mismo un hallazgo.
 
@@ -32,7 +32,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | M13 | Ingreso Mínimo Vital — en revisión | Seguridad Social y Ley 19/2021 | ☑ |
 | M14 | Complemento de ayuda para la infancia | Seguridad Social y Ley 19/2021 | ☐ |
 | M15 | Asignación por hijo o menor a cargo con discapacidad | Seguridad Social | ☐ |
-| M16 | Prestación por nacimiento o adopción en familias numerosas, monoparentales o con madre o padre con discapacidad (pago único) | Seguridad Social | ☐ |
+| M16 | Prestación por nacimiento o adopción en familias numerosas, monoparentales o con madre o padre con discapacidad (pago único) — **quitada** (2026-11-21): el nacimiento ya está en M06, M08 y M24, y la familia numerosa en M21 y M47 | Seguridad Social | ☐ |
 | M17 | Subsidio por desempleo | SEPE | ☐ |
 | M18 | Prestación por nacimiento y cuidado de menor | Seguridad Social | ☐ |
 | M19 | Prestación económica para cuidados en el entorno familiar (dependencia) | Ley 39/2006 e IMSERSO | ☐ |
@@ -43,8 +43,8 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | # | Ayuda | Dónde se lee | Estado |
 | --- | --- | --- | --- |
 | M21 | Deducción estatal por familia numerosa | Agencia Tributaria | ☐ |
-| M22 | Deducción estatal por maternidad | Agencia Tributaria | ☐ |
-| M23 | Deducción por gastos educativos (Madrid) | Agencia Tributaria | ☐ |
+| M22 | Deducción estatal por maternidad — **quitada** (2026-11-21): mismo mecanismo que la M21 | Agencia Tributaria | ☐ |
+| M23 | Deducción por gastos educativos (Madrid) — **quitada** (2026-11-21): ya hay dos deducciones autonómicas (M24 y M25) y una foral (M26) | Agencia Tributaria | ☐ |
 | M24 ★ | Deducción por nacimiento o adopción (Cataluña) — **cerrada** | Agencia Tributaria | ☑ |
 | M25 ★ | Deducción por alquiler de la vivienda habitual para menores de 35 años (Galicia) — **cerrada** | Agencia Tributaria | ☑ |
 | M26 ★ | Deducción por descendientes (Bizkaia, régimen foral) — **cerrada** | Hacienda de Bizkaia | ☑ |
@@ -55,7 +55,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | --- | --- | --- | --- |
 | M27 ★ | Reducción de jornada por guarda legal — **cerrada** | Estatuto de los Trabajadores (BOE) | ☑ |
 | M28 ★ | Permiso parental — **cerrada** | Estatuto de los Trabajadores (BOE) | ☑ |
-| M29 | Excedencia por cuidado de hijos | Estatuto de los Trabajadores (BOE) | ☐ |
+| M29 | Excedencia por cuidado de hijos — **quitada** (2026-11-21): misma ley y mismo tipo que la M27 y la M28 | Estatuto de los Trabajadores (BOE) | ☐ |
 
 ## E. Bonos y tarifas — 3
 
@@ -63,26 +63,27 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | --- | --- | --- | --- |
 | M30 ★ | Bono social eléctrico — **cerrada** | Ministerio para la Transición Ecológica | ☑ |
 | M31 ★ | Tarjeta Solidaria de TUSSAM (Sevilla) — **cerrada** | TUSSAM | ☑ |
-| M32 | Ampliación de los tramos del canon del agua para familias de más de tres miembros (Cataluña) | Catálogo de trámites de la Generalitat | ☐ |
+| M32 | Ampliación de los tramos del canon del agua para familias de más de tres miembros (Cataluña) — **quitada** (2026-11-21): el tipo tarifa ya está con M30 y M31 | Catálogo de trámites de la Generalitat | ☐ |
 
 ## F. Autonómicas, de los catálogos de trámites — 14
 
 | # | Ayuda | Comunidad | Dónde se lee | Estado |
 | --- | --- | --- | --- | --- |
-| M33 | Prestaciones económicas a familias acogedoras de menores | Andalucía | API de la Junta, trámite 73 | ☐ |
-| M34 | Prestaciones sociales a personas con discapacidad (antigua LISMI) | Andalucía | API de la Junta, trámite 10660 | ☐ |
+| M33 | Prestaciones económicas a familias acogedoras de menores — **quitada** (2026-11-21): el acogimiento queda con la M38 | Andalucía | API de la Junta, trámite 73 | ☐ |
+| M34 | Prestaciones sociales a personas con discapacidad (antigua LISMI) — **quitada** (2026-11-21): la discapacidad ya está en M03 y M15 | Andalucía | API de la Junta, trámite 10660 | ☐ |
 | M35 | Ayuda complementaria al Ingreso Mínimo Vital | Andalucía | API de la Junta, trámite 25215 | ☐ |
 | M36 | Ayudas al alquiler para víctimas de violencia de género y personas desahuciadas | Andalucía | API de la Junta, trámite 24753 | ☐ |
-| M37 | Prestació per a famílies amb infants | Cataluña | Catálogo de trámites de la Generalitat | ☐ |
+| M37 | Prestació per a famílies amb infants — **quitada** (2026-11-21): parecida al complemento de ayuda para la infancia (M14) | Cataluña | Catálogo de trámites de la Generalitat | ☐ |
 | M38 | Prestació per a l'acolliment en família aliena | Cataluña | Catálogo de trámites de la Generalitat | ☐ |
-| M39 | Renda garantida de ciutadania | Cataluña | Catálogo de trámites de la Generalitat | ☐ |
-| M40 | Beques Equitat (estudios universitarios) | Cataluña | Catálogo de trámites de la Generalitat / BDNS 920036 | ☐ |
-| M41 | Bono alquiler joven (bono alugueiro mocidade) | Galicia | Sede de la Xunta / IGVS | ☐ |
+| M39 | Renda garantida de ciutadania — **quitada** (2026-11-21): la renta mínima ya está con M13 y M35 | Cataluña | Catálogo de trámites de la Generalitat | ☐ |
+| M40 | Beques Equitat (estudios universitarios) — **quitada** (2026-11-21): las becas ya están en M01 y M02 | Cataluña | Catálogo de trámites de la Generalitat / BDNS 920036 | ☐ |
+| M41 | Bono alquiler joven (bono alugueiro mocidade) — **quitada** (2026-11-21): es la misma ayuda que la M04 (Canarias) | Galicia | Sede de la Xunta / IGVS | ☐ |
 | M42 | Tarxeta Benvida (nacimientos) | Galicia | Sede de la Xunta (comprobar que sigue vigente) | ☐ |
 | M43 | Ayudas económicas a familias numerosas | Castilla-La Mancha | Catálogo de la Junta, SIIJ | ☐ |
-| M44 | Ayudas de emergencia social | Castilla-La Mancha | Catálogo de la Junta, S609 | ☐ |
+| M44 | Ayudas de emergencia social — **quitada** (2026-11-21): la emergencia social ya está con M09 y M12 | Castilla-La Mancha | Catálogo de la Junta, S609 | ☐ |
 | M45 ★ | Subvención por contratar a una persona empleada de hogar — **cerrada** | Madrid | Sede de la Comunidad de Madrid | ☑ |
 | M46 | Valoración de atención temprana | Madrid | Sede de la Comunidad de Madrid | ☐ |
+| M51 | Reconocimiento de la situación de dependencia (añadida el 2026-11-21: tipo "reconocimiento", paso previo de la M19) | Madrid | Sede de la Comunidad de Madrid | ☐ |
 
 ## G. Municipales — 4
 
@@ -90,7 +91,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | --- | --- | --- | --- | --- |
 | M47 ★ | Bonificación del IBI por familia numerosa — **cerrada** | Madrid | Ayuntamiento de Madrid | ☑ |
 | M48 | Ayudas Económicas Familiares | Sevilla | Ayuntamiento de Sevilla | ☐ |
-| M49 | Prestaciones Económicas Individualizadas | València | Sede del Ayuntamiento | ☐ |
+| M49 | Prestaciones Económicas Individualizadas — **quitada** (2026-11-21): la emergencia municipal ya está con M09 y M12 | València | Sede del Ayuntamiento | ☐ |
 | M50 | Precios de las escoles bressol con tarifación social | Barcelona | Ayuntamiento de Barcelona | ☐ |
 
 ## Cómo es cada ficha (`fichas/Mxx.md`)
