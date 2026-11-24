@@ -33,7 +33,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | M14 | Complemento de ayuda para la infancia — **cerrada** | Seguridad Social y Ley 19/2021 | ☑ |
 | M15 | Asignación por hijo o menor a cargo con discapacidad — **cerrada** | Seguridad Social | ☑ |
 | M16 | Prestación por nacimiento o adopción en familias numerosas, monoparentales o con madre o padre con discapacidad (pago único) — **quitada** (2026-11-21): el nacimiento ya está en M06, M08 y M24, y la familia numerosa en M21 y M47 | Seguridad Social | ☐ |
-| M17 | Subsidio por desempleo | SEPE | ☐ |
+| M17 | Subsidio por desempleo (solo el subsidio general del artículo 274.1 y 274.2; las demás vías, como ayudas vecinas) — en revisión | SEPE | ☑ |
 | M18 | Prestación por nacimiento y cuidado de menor | Seguridad Social | ☐ |
 | M19 | Prestación económica para cuidados en el entorno familiar (dependencia) | Ley 39/2006 e IMSERSO | ☐ |
 | M20 ★ | Plan VEO (ayuda visual para menores de hasta 16 años) — **cerrada, modelo de ficha** | BOE, Real Decreto 902/2025 | ☑ |
