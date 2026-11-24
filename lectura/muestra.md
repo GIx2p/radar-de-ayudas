@@ -31,7 +31,7 @@ Muestra variada para la lectura abierta del H5 (método en `METODO.md`, sección
 | --- | --- | --- | --- |
 | M13 | Ingreso Mínimo Vital — **cerrada** | Seguridad Social y Ley 19/2021 | ☑ |
 | M14 | Complemento de ayuda para la infancia — **cerrada** | Seguridad Social y Ley 19/2021 | ☑ |
-| M15 | Asignación por hijo o menor a cargo con discapacidad — en revisión | Seguridad Social | ☑ |
+| M15 | Asignación por hijo o menor a cargo con discapacidad — **cerrada** | Seguridad Social | ☑ |
 | M16 | Prestación por nacimiento o adopción en familias numerosas, monoparentales o con madre o padre con discapacidad (pago único) — **quitada** (2026-11-21): el nacimiento ya está en M06, M08 y M24, y la familia numerosa en M21 y M47 | Seguridad Social | ☐ |
 | M17 | Subsidio por desempleo | SEPE | ☐ |
 | M18 | Prestación por nacimiento y cuidado de menor | Seguridad Social | ☐ |
